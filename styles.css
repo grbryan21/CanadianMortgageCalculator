@@ -1,0 +1,168 @@
+/* FONTS & BASE COLORS */
+body {
+  font-family: 'Lato', sans-serif;
+  background-color: #f7f7ff; /* from your palette */
+  color: #2d232e;            /* from your palette */
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding-top: 2rem;
+}
+
+/* SECTION TITLES & DESCRIPTIONS */
+.section-title {
+  font-weight: bold;
+  color: #014e4e; /* brand color */
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.section-description {
+  font-size: 0.9rem;
+  color: #0f7570; /* brand color */
+  margin-bottom: 1rem;
+}
+
+/* SLIDER (FORM-RANGE) */
+.form-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #dae7e0; /* track background */
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.form-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  background-color: #014e4e; /* brand color */
+  border-radius: 50%;
+  border: 2px solid #f7f7ff;
+  margin-top: -7px; /* center thumb vertically on track */
+  cursor: pointer;
+}
+.form-range::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  background-color: #014e4e;
+  border-radius: 50%;
+  border: 2px solid #f7f7ff;
+  cursor: pointer;
+}
+/* The track fill (left side) as gradient */
+.form-range::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #014e4e 0%, #0f7570 100%);
+  border-radius: 3px;
+  height: 6px;
+}
+.form-range::-moz-range-track {
+  background: linear-gradient(90deg, #014e4e 0%, #0f7570 100%);
+  border-radius: 3px;
+  height: 6px;
+}
+
+/* RESULTS CARD */
+.results-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+  background-color: #fff;
+  position: relative;
+  margin-top: 2rem;
+}
+.results-card h5 {
+  font-family: 'Lora', serif;
+  font-weight: 700;
+  color: #014e4e;
+  margin-bottom: 1rem;
+}
+.results-card h3 {
+  font-family: 'Lora', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #014e4e;
+  margin-bottom: 1rem;
+}
+
+/* NAV TABS */
+.nav-tabs .nav-link {
+  color: #0f7570; /* brand color for default state */
+}
+.nav-tabs .nav-link.active {
+  background-color: #0f7570; /* brand color instead of bootstrap blue */
+  color: #fff;
+}
+
+/* PROGRESS BARS */
+.progress-bar {
+  background-color: #014e4e; /* principal portion */
+}
+.progress-bar.bg-secondary {
+  background-color: #dae7e0; /* interest portion */
+}
+
+/* HR - dashed line */
+hr {
+  border: 0;
+  border-top: 1px dashed #dae7e0;
+  margin: 2rem 0;
+}
+
+/* BUTTONS */
+/* Replace Bootstrap "primary" blue with #0f7570 */
+.btn-primary {
+  background-color: #0f7570;
+  border-color: #0f7570;
+}
+.btn-primary:hover {
+  background-color: #014e4e;
+  border-color: #014e4e;
+}
+/* Similarly for outline-primary */
+.btn-outline-primary {
+  color: #0f7570;
+  border-color: #0f7570;
+}
+.btn-outline-primary.active,
+.btn-outline-primary:hover {
+  background-color: #0f7570;
+  color: #fff;
+  border-color: #0f7570;
+}
+
+/* CONFIGURATION GEAR ICON */
+.config-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.config-icon button {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  color: #014e4e;
+  cursor: pointer;
+}
+
+/* CONFIG PANEL (Slide-in) */
+.config-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  background-color: #f8f9fa;
+  border-left: 1px solid #ddd;
+  padding: 20px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 9999;
+}
+.d-none {
+  display: none !important;
+}

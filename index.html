@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Genesis Mortgage Calculator</title>
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Google Fonts: Lato and Lora -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Lora:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <!-- LEFT COLUMN: INPUTS -->
+      <div class="col-md-6">
+        
+        <!-- Mortgage Amount & Payment Frequency -->
+        <div class="mb-4">
+          <h3 class="section-title">Mortgage Amount</h3>
+          <div class="mb-3">
+            <input 
+              type="range"
+              id="mortgageAmount"
+              class="form-range"
+              min="100000"
+              max="1500000"
+              step="10000"
+              value="500000"
+            />
+            <div class="d-flex justify-content-between mt-2">
+              <small>$100,000</small>
+              <small id="mortgageAmountDisplay">$500,000</small>
+              <small>$1,500,000</small>
+            </div>
+            <div class="mt-2">
+              <input
+                type="number"
+                id="customMortgageAmount"
+                class="form-control"
+                placeholder="Enter amount (up to $100,000,000)"
+              />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="paymentFrequency" class="form-label">Payment Frequency</label>
+            <select id="paymentFrequency" class="form-select">
+              <option value="monthly">Monthly</option>
+              <option value="biweekly">Biweekly</option>
+              <option value="weekly">Weekly</option>
+              <option value="daily">Daily</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="semiannual">Semi-Annual</option>
+            </select>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Rate Section -->
+        <div class="mb-4">
+          <h3 class="section-title">Rate</h3>
+          <p class="section-description">
+            Your mortgage interest rate can either be Fixed for the term or Variable 
+            (which changes with the prime rate). The Rate Term is the contract length 
+            with a lender.
+          </p>
+          <div class="mb-3">
+            <input
+              type="range"
+              id="interestRate"
+              class="form-range"
+              min="1"
+              max="10"
+              step="0.1"
+              value="5.25"
+            />
+            <div class="d-flex justify-content-between mt-2">
+              <small>1%</small>
+              <small id="interestRateDisplay">5.25%</small>
+              <small>10%</small>
+            </div>
+            <!-- Custom input for exact rate -->
+            <div class="mt-2">
+              <input
+                type="number"
+                id="customInterestRate"
+                class="form-control"
+                placeholder="Enter exact interest rate (1–10%)"
+                step="0.1"
+                min="1"
+                max="10"
+              />
+            </div>
+          </div>
+          <label for="rateTerm" class="form-label">Rate Term</label>
+          <div class="d-flex align-items-center">
+            <div class="btn-group me-3" role="group">
+              <button 
+                type="button"
+                id="fixedRate"
+                class="btn btn-outline-primary active"
+              >
+                Fixed
+              </button>
+              <button
+                type="button"
+                id="variableRate"
+                class="btn btn-outline-primary"
+              >
+                Variable
+              </button>
+            </div>
+            <select id="rateTerm" class="form-select w-auto">
+              <option value="1">1 Year</option>
+              <option value="2">2 Years</option>
+              <option value="3">3 Years</option>
+              <option value="4">4 Years</option>
+              <option value="5" selected>5 Years</option>
+              <option value="6">6 Years</option>
+              <option value="7">7 Years</option>
+              <option value="10">10 Years</option>
+            </select>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Amortization Section -->
+        <div class="mb-4">
+          <h3 class="section-title">Amortization</h3>
+          <p class="section-description">
+            Amortization is the total time it takes to pay off your mortgage in full. 
+            New mortgages usually start with an amortization of 25 years or 30 years in Canada.
+          </p>
+          <div class="mb-3">
+            <input
+              type="range"
+              id="amortization"
+              class="form-range"
+              min="5"
+              max="30"
+              step="1"
+              value="25"
+            />
+            <div class="d-flex justify-content-between mt-2">
+              <small>5 years</small>
+              <small id="amortizationDisplay">25 years</small>
+              <small>30 years</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: RESULTS -->
+      <div class="col-md-6">
+        <div class="results-card">
+          <div class="config-icon">
+            <button id="configButton" class="btn btn-link">
+              <i class="bi bi-gear-fill"></i>
+            </button>
+          </div>
+          <h5>Mortgage Payment</h5>
+          <!-- We'll insert the payment + frequency via JS -->
+          <h3 id="monthlyPaymentDisplay">$0.00</h3>
+
+          <hr />
+          <ul class="nav nav-tabs" id="resultsTabs">
+            <li class="nav-item">
+              <button 
+                class="nav-link active" 
+                data-bs-toggle="tab" 
+                data-bs-target="#paymentTab"
+              >
+                Payment
+              </button>
+            </li>
+            <li class="nav-item">
+              <button 
+                class="nav-link" 
+                data-bs-toggle="tab" 
+                data-bs-target="#termTab"
+              >
+                Term
+              </button>
+            </li>
+            <li class="nav-item">
+              <button 
+                class="nav-link" 
+                data-bs-toggle="tab" 
+                data-bs-target="#totalTab"
+              >
+                Total
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content mt-3">
+            <!-- Payment Tab -->
+            <div class="tab-pane fade show active" id="paymentTab">
+              <h6>Payment Breakdown</h6>
+              <div class="progress">
+                <div 
+                  id="principalProgress"
+                  class="progress-bar"
+                  style="width: 50%;"
+                ></div>
+                <div 
+                  id="interestProgress"
+                  class="progress-bar bg-secondary"
+                  style="width: 50%;"
+                ></div>
+              </div>
+              <p class="mt-2">
+                Principal Paid: <strong id="principalPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Interest Paid: <strong id="interestPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Total Payment: <strong id="totalPaymentDisplay">$0.00</strong>
+              </p>
+              <p>
+                Balance End of Term: 
+                <strong id="balanceEndOfTermDisplay">$0.00</strong>
+              </p>
+              <p>
+                Effective Amortization: 
+                <strong id="effectiveAmortizationDisplay">0 years</strong>
+              </p>
+            </div>
+
+            <!-- Term Tab -->
+            <div class="tab-pane fade" id="termTab">
+              <h6>
+                Breakdown over <span id="termYearsDisplay">5</span> years
+              </h6>
+              <div class="progress">
+                <div 
+                  id="termPrincipalProgress"
+                  class="progress-bar"
+                  style="width: 50%;"
+                ></div>
+                <div 
+                  id="termInterestProgress"
+                  class="progress-bar bg-secondary"
+                  style="width: 50%;"
+                ></div>
+              </div>
+              <p>
+                Principal Paid: 
+                <strong id="termPrincipalPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Interest Paid: 
+                <strong id="termInterestPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Total Payment: 
+                <strong id="termTotalPaymentDisplay">$0.00</strong>
+              </p>
+              <p>
+                Balance End of Term: 
+                <strong id="termBalanceDisplay">$0.00</strong>
+              </p>
+              <p>
+                Effective Amortization: 
+                <strong id="termAmortizationDisplay">0 years</strong>
+              </p>
+            </div>
+
+            <!-- Total Tab -->
+            <div class="tab-pane fade" id="totalTab">
+              <h6>Total Breakdown</h6>
+              <div class="progress">
+                <div
+                  id="totalPrincipalProgress"
+                  class="progress-bar"
+                  style="width: 50%;"
+                ></div>
+                <div
+                  id="totalInterestProgress"
+                  class="progress-bar bg-secondary"
+                  style="width: 50%;"
+                ></div>
+              </div>
+              <p>
+                Principal Paid: 
+                <strong id="totalPrincipalPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Interest Paid: 
+                <strong id="totalInterestPaidDisplay">$0.00</strong>
+              </p>
+              <p>
+                Total Payment: 
+                <strong id="totalPaymentOverallDisplay">$0.00</strong>
+              </p>
+              <p>
+                Balance End of Term: 
+                <strong id="totalBalanceDisplay">$0.00</strong>
+              </p>
+              <p>
+                Effective Amortization: 
+                <strong id="totalAmortizationDisplay">0 years</strong>
+              </p>
+            </div>
+          </div>
+
+          <button
+            id="downloadReport"
+            class="btn btn-primary w-100 mt-3"
+          >
+            Download Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURATION PANEL (SLIDE-IN) -->
+  <div id="configPanel" class="config-panel d-none">
+    <h5 class="mb-3">Configuration</h5>
+    <div class="mb-3">
+      <label for="loanType" class="form-label">Loan Type</label>
+      <select id="loanType" class="form-select">
+        <option value="regular" selected>Regular (Compounded Monthly)</option>
+        <option value="interestOnly">Interest-Only</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="compoundingFrequency" class="form-label">Compounding Frequency</label>
+      <select id="compoundingFrequency" class="form-select">
+        <option value="12" selected>Monthly</option>
+        <option value="52">Weekly</option>
+        <option value="26">Bi-Weekly</option>
+        <option value="4">Quarterly</option>
+        <option value="2">Semi-Annually</option>
+        <option value="365">Daily</option>
+      </select>
+    </div>
+    <button id="closeConfig" class="btn btn-secondary w-100">Close</button>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <script src="script.js"></script>
+</body>
+</html>
