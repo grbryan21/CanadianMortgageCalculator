@@ -75,6 +75,42 @@
 
         <hr />
 
+        <!-- Down Payment and Property Type -->
+        <div class="mb-4">
+          <h3 class="section-title">Down Payment & Property Type</h3>
+          <p class="section-description">
+            Mortgage loan insurance is provided by CMHC or a private company and is 
+            required for any mortgage where the down payment is less than 20% of the 
+            purchase price or lending value of a home. “Not available” indicates the 
+            loan is uninsurable.
+          </p>
+
+          <!-- Down Payment -->
+          <div class="mb-3">
+            <label for="downPayment" class="form-label">Down Payment</label>
+            <input
+              type="number"
+              id="downPayment"
+              class="form-control"
+              placeholder="Enter your down payment ($)"
+            />
+          </div>
+
+          <!-- Property Type -->
+          <div class="mb-3">
+            <label for="propertyType" class="form-label">Property Type</label>
+            <select id="propertyType" class="form-select">
+              <option value="ownerOccupied" selected>Owner-Occupied</option>
+              <option value="rental">Rental Property</option>
+              <option value="condo">Condo</option>
+              <option value="duplex">Duplex/Triplex</option>
+              <!-- Add more if desired -->
+            </select>
+          </div>
+        </div>
+
+        <hr />
+
         <!-- Rate Section -->
         <div class="mb-4">
           <h3 class="section-title">Rate</h3>
@@ -181,6 +217,12 @@
           <h5>Mortgage Payment</h5>
           <!-- We'll insert the payment + frequency via JS -->
           <h3 id="monthlyPaymentDisplay">$0.00</h3>
+
+          <!-- Mortgage Loan Insurance Cost -->
+          <p class="mt-3">
+            Mortgage Loan Insurance Cost:
+            <strong id="insuranceCostDisplay">$0.00</strong>
+          </p>
 
           <hr />
           <ul class="nav nav-tabs" id="resultsTabs">
@@ -331,6 +373,24 @@
           >
             Download Report
           </button>
+
+          <!-- BELOW: COMPARISON FOR <5% DOWN -->
+          <div 
+            id="uninsurableComparison"
+            class="comparison-section alert alert-warning mt-4 d-none"
+          >
+            <h6>Comparison: Your Scenario vs. Minimum 5% Scenario</h6>
+            <p>
+              <strong>Your Scenario (Below 5% Down)</strong><br/>
+              Payment ignoring insurance: 
+              <span id="uninsurableUserPayment">$0.00</span>
+            </p>
+            <p>
+              <strong>Minimum 5% Down Scenario</strong><br/>
+              Payment with insurance (5% down):
+              <span id="uninsurableMinDownPayment">$0.00</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

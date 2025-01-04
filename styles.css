@@ -166,3 +166,13 @@ hr {
 .d-none {
   display: none !important;
 }
+
+/* COMPARISON SECTION */
+.comparison-section {
+  /* Using Bootstrap's .alert-warning styling */
+  border: 1px solid #ffc107;
+}
+.comparison-section h6 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
