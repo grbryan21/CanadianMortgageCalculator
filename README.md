@@ -26,4 +26,4 @@ A **fully responsive**, **Bootstrap-based** Mortgage Calculator built for Genesi
 
 1. **Clone or download** this repository:
    ```bash
-   git clone https://github.com/<YourUsername>/<YourRepoName>.git
+   git clone https://github.com/grbryan21/CanadianMortgageCalculator.git
