@@ -1,43 +1,73 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Elements
-  const mortgageAmount = document.getElementById("mortgageAmount");
-  const customMortgageAmount = document.getElementById("customMortgageAmount");
-  const interestRate = document.getElementById("interestRate");
-  const customInterestRate = document.getElementById("customInterestRate");
-  const amortization = document.getElementById("amortization");
-  const paymentFrequency = document.getElementById("paymentFrequency");
-  const loanType = document.getElementById("loanType");
-  const compoundingFrequency = document.getElementById("compoundingFrequency");
-  const fixedRateButton = document.getElementById("fixedRate");
-  const variableRateButton = document.getElementById("variableRate");
-  const rateTerm = document.getElementById("rateTerm");
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 1. ELEMENT REFERENCES
+  // ─────────────────────────────────────────────────────────────────────────────
 
-  // Insurance
-  const downPaymentInput = document.getElementById("downPayment");
+  // Mortgage Size
+  const mortgageSizeInput = document.getElementById("mortgageSize");
+  const mortgageSizeSlider = document.getElementById("mortgageSizeSlider");
+
+  // Down Payment
+  const downPaymentInput = document.getElementById("downPaymentInput");
+  const downPaymentSlider = document.getElementById("downPaymentSlider");
+  const downPaymentPercentDisplay = document.getElementById("downPaymentPercentDisplay");
   const propertyType = document.getElementById("propertyType");
+
+  // Payment Frequency
+  const paymentFrequencySelect = document.getElementById("paymentFrequency");
+  const advancedFrequencySelect = document.getElementById("advancedFrequency");
+
+  // Interest Rate
+  const interestRateInput = document.getElementById("interestRateInput");
+  const interestRateSlider = document.getElementById("interestRateSlider");
+
+  // Amortization
+  const amortizationRange = document.getElementById("amortization");
+  const amortizationDisplay = document.getElementById("amortizationDisplay");
+
+  // Advanced Options
+  const propertyTaxInput = document.getElementById("propertyTax");
+  const condoFeesInput = document.getElementById("condoFees");
+  const extraPrepaymentInput = document.getElementById("extraPrepayment");
+  const loanTypeSelect = document.getElementById("loanType");
+  const compoundingFrequencySelect = document.getElementById("compoundingFrequency");
+
+  // Results - Show Mortgage Size & Down Payment in the results card
+  const mortgageSizeDisplay = document.getElementById("mortgageSizeDisplay");
+  const downPaymentDisplay = document.getElementById("downPaymentDisplay");
+
+  // Results - Main Payment
+  const monthlyPaymentDisplay = document.getElementById("monthlyPaymentDisplay");
   const insuranceCostDisplay = document.getElementById("insuranceCostDisplay");
 
-  // Payment tab fields
+  // Carrying Costs
+  const carryingCostSection = document.getElementById("carryingCostSection");
+  const propertyTaxMonthlyDisplay = document.getElementById("propertyTaxMonthlyDisplay");
+  const condoFeesMonthlyDisplay = document.getElementById("condoFeesMonthlyDisplay");
+
+  // Payment Tab
+  const principalPaidDisplay = document.getElementById("principalPaidDisplay");
+  const interestPaidDisplay = document.getElementById("interestPaidDisplay");
   const totalPaymentDisplay = document.getElementById("totalPaymentDisplay");
   const balanceEndOfTermDisplay = document.getElementById("balanceEndOfTermDisplay");
   const effectiveAmortizationDisplay = document.getElementById("effectiveAmortizationDisplay");
 
-  // Other display elements
-  const mortgageAmountDisplay = document.getElementById("mortgageAmountDisplay");
-  const monthlyPaymentDisplay = document.getElementById("monthlyPaymentDisplay");
-  const principalPaidDisplay = document.getElementById("principalPaidDisplay");
-  const interestPaidDisplay = document.getElementById("interestPaidDisplay");
+  // Term Tab
   const termPrincipalPaidDisplay = document.getElementById("termPrincipalPaidDisplay");
   const termInterestPaidDisplay = document.getElementById("termInterestPaidDisplay");
   const termTotalPaymentDisplay = document.getElementById("termTotalPaymentDisplay");
   const termBalanceDisplay = document.getElementById("termBalanceDisplay");
-  const termYearsDisplay = document.getElementById("termYearsDisplay");
   const termAmortizationDisplay = document.getElementById("termAmortizationDisplay");
+  const termYearsDisplay = document.getElementById("termYearsDisplay");
+
+  // Total Tab
   const totalPrincipalPaidDisplay = document.getElementById("totalPrincipalPaidDisplay");
   const totalInterestPaidDisplay = document.getElementById("totalInterestPaidDisplay");
   const totalPaymentOverallDisplay = document.getElementById("totalPaymentOverallDisplay");
   const totalBalanceDisplay = document.getElementById("totalBalanceDisplay");
   const totalAmortizationDisplay = document.getElementById("totalAmortizationDisplay");
+
+  // Progress Bars
   const principalProgress = document.getElementById("principalProgress");
   const interestProgress = document.getElementById("interestProgress");
   const termPrincipalProgress = document.getElementById("termPrincipalProgress");
@@ -45,35 +75,67 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalPrincipalProgress = document.getElementById("totalPrincipalProgress");
   const totalInterestProgress = document.getElementById("totalInterestProgress");
 
-  // Comparison elements (for <5% scenario)
+  // Comparison <5% Down
   const uninsurableComparison = document.getElementById("uninsurableComparison");
   const uninsurableUserPayment = document.getElementById("uninsurableUserPayment");
   const uninsurableMinDownPayment = document.getElementById("uninsurableMinDownPayment");
 
-  // Config panel
+  // Configuration Panel
   const configButton = document.getElementById("configButton");
   const configPanel = document.getElementById("configPanel");
   const closeConfig = document.getElementById("closeConfig");
 
-  // Download
+  // Download + Email
   const downloadReportButton = document.getElementById("downloadReport");
+  const emailResultsButton = document.getElementById("emailResults");
 
-  // =========================================================================
-  // UTILITY FUNCTIONS
-  // =========================================================================
+  // Rate Type Buttons (If you have them)
+  // If not, remove these references
+  const fixedRateButton = document.getElementById("fixedRate");
+  const variableRateButton = document.getElementById("variableRate");
 
-  // Format currency
+  // Rate Term (If you have a dropdown for rate term)
+  const rateTermSelect = document.getElementById("rateTerm");
+
+  // Scenario B elements
+  const scenarioBMortgageAmount = document.getElementById("scenarioBMortgageAmount");
+  const scenarioBDownPayment = document.getElementById("scenarioBDownPayment");
+  const scenarioBInterestRate = document.getElementById("scenarioBInterestRate");
+  const scenarioBAmortization = document.getElementById("scenarioBAmortization");
+  const scenarioBPaymentFrequency = document.getElementById("scenarioBPaymentFrequency");
+  const calculateScenarioBButton = document.getElementById("calculateScenarioB");
+  const scenarioBResult = document.getElementById("scenarioBResult");
+  const scenarioBPayment = document.getElementById("scenarioBPayment");
+  const scenarioBInterestPaid = document.getElementById("scenarioBInterestPaid");
+  const scenarioBInsurance = document.getElementById("scenarioBInsurance");
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 2. UTILITY FUNCTIONS
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // Format currency with commas
   const formatCurrency = (amount) => {
-    if (isNaN(amount)) return "$0.00";
+    if (isNaN(amount) || amount === null) return "$0.00";
     return `$${parseFloat(amount).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
-  // Progress bar
+  // For integer display of mortgage size / down payment (no decimals)
+  const formatIntegerCurrency = (amount) => {
+    if (isNaN(amount) || amount === null) return "$0";
+    return `$${parseInt(amount, 10).toLocaleString(undefined)}`;
+  };
+
+  // Update progress bar
   const updateProgressBar = (principalRatio, interestRatio, principalBar, interestBar) => {
-    if (isNaN(principalRatio) || isNaN(interestRatio) || principalRatio < 0 || interestRatio < 0) {
+    if (
+      isNaN(principalRatio) ||
+      isNaN(interestRatio) ||
+      principalRatio < 0 ||
+      interestRatio < 0
+    ) {
       principalBar.style.width = "50%";
       interestBar.style.width = "50%";
       return;
@@ -82,7 +144,30 @@ document.addEventListener("DOMContentLoaded", () => {
     interestBar.style.width = (interestRatio * 100).toFixed(2) + "%";
   };
 
-  // Basic premium table
+  // Payment Frequency
+  const getPaymentFrequency = () => {
+    // If user selected an advanced frequency
+    const advFreq = advancedFrequencySelect.value;
+    if (advFreq !== "none") {
+      switch (advFreq) {
+        case "semiannual": return { freq: 2, label: "semi-annually" };
+        case "quarterly": return { freq: 4, label: "quarterly" };
+        case "daily": return { freq: 365, label: "daily" };
+        default: return { freq: 12, label: "monthly" };
+      }
+    }
+    // Otherwise, standard freq
+    switch (paymentFrequencySelect.value) {
+      case "monthly": return { freq: 12, label: "monthly" };
+      case "biweekly": return { freq: 26, label: "bi-weekly (accelerated)" };
+      case "biweekly-standard": return { freq: 26, label: "bi-weekly (standard)" };
+      case "weekly-accelerated": return { freq: 52, label: "weekly (accelerated)" };
+      case "weekly-standard": return { freq: 52, label: "weekly (standard)" };
+      default: return { freq: 12, label: "monthly" };
+    }
+  };
+
+  // Insurance Premium Table
   const insurancePremiumTable = [
     { maxLTV: 0.80, premium: 0.0 },
     { maxLTV: 0.85, premium: 0.018 },
@@ -96,462 +181,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return insurancePremiumTable[i].premium;
       }
     }
-    // ltv > 0.95 => not insurable
     return null;
   };
 
-  // Zero out main display
-  const zeroOutResults = () => {
-    // Payment tab
-    totalPaymentDisplay.innerText = "$0.00";
-    balanceEndOfTermDisplay.innerText = "$0.00";
-    effectiveAmortizationDisplay.innerText = "N/A";
-    principalPaidDisplay.innerText = "$0.00";
-    interestPaidDisplay.innerText = "$0.00";
-
-    // Term tab
-    termPrincipalPaidDisplay.innerText = "$0.00";
-    termInterestPaidDisplay.innerText = "$0.00";
-    termTotalPaymentDisplay.innerText = "$0.00";
-    termBalanceDisplay.innerText = "$0.00";
-    termAmortizationDisplay.innerText = "N/A";
-
-    // Total tab
-    totalPrincipalPaidDisplay.innerText = "$0.00";
-    totalInterestPaidDisplay.innerText = "$0.00";
-    totalPaymentOverallDisplay.innerText = "$0.00";
-    totalBalanceDisplay.innerText = "$0.00";
-    totalAmortizationDisplay.innerText = "N/A";
-
-    // progress bars fallback
-    principalProgress.style.width = "50%";
-    interestProgress.style.width = "50%";
-    termPrincipalProgress.style.width = "50%";
-    termInterestProgress.style.width = "50%";
-    totalPrincipalProgress.style.width = "50%";
-    totalInterestProgress.style.width = "50%";
-  };
-
-  // Simple no-insurance calculation
-  // returns { payment, freqString }
-  const runNoInsuranceCalc = (price, annualRate, theYears) => {
-    let freq;
-    let freqString;
-    switch (paymentFrequency.value) {
-      case "monthly": freq = 12; freqString = "monthly"; break;
-      case "biweekly": freq = 26; freqString = "biweekly"; break;
-      case "weekly": freq = 52; freqString = "weekly"; break;
-      case "daily": freq = 365; freqString = "daily"; break;
-      case "quarterly": freq = 4; freqString = "quarterly"; break;
-      case "semiannual": freq = 2; freqString = "semi-annually"; break;
-      default: freq = 12; freqString = "monthly";
-    }
-
-    const isFixedRate = fixedRateButton.classList.contains("active");
-    const adjustedRate = isFixedRate ? annualRate : annualRate + 0.01;
-    const comp = parseInt(compoundingFrequency.value, 10);
-    const ratePerPeriod = adjustedRate / comp;
-    const eAR = Math.pow(1 + ratePerPeriod, comp) - 1;
-    const eRatePerPayment = eAR / freq;
-    const totalP = theYears * freq;
-
-    let pmnt = 0;
-    if (loanType.value === "interestOnly") {
-      pmnt = price * eRatePerPayment;
-    } else {
-      pmnt =
-        (price * eRatePerPayment) /
-        (1 - Math.pow(1 + eRatePerPayment, -totalP));
-    }
-
-    return { payment: pmnt, freqString };
-  };
-
-  // Full insurance-based scenario
-  const runInsuranceCalc = (purchase, dp, propType, baseAnnualRate, theYears) => {
-    let isInsurable = true;
-    let insuranceCost = 0;
-    const mortgageLoan = purchase - dp;
-
-    // Basic checks
-    if (purchase > 1000000) isInsurable = false;
-    if (dp < 0.05 * purchase) isInsurable = false;
-    const ltv = mortgageLoan / purchase;
-    if (propType === "rental" && ltv > 0.80) isInsurable = false;
-
-    let textInsurance = "$0.00";
-    if (dp >= 0.20 * purchase) {
-      insuranceCost = 0;
-    } else {
-      const rate = getInsuranceRate(ltv);
-      if (rate === null) isInsurable = false;
-      else if (isInsurable) insuranceCost = mortgageLoan * rate;
-    }
-
-    if (!isInsurable) textInsurance = "N/A";
-    else textInsurance = formatCurrency(insuranceCost);
-
-    // Payment freq
-    let freq;
-    let freqString;
-    switch (paymentFrequency.value) {
-      case "monthly": freq = 12; freqString = "monthly"; break;
-      case "biweekly": freq = 26; freqString = "biweekly"; break;
-      case "weekly": freq = 52; freqString = "weekly"; break;
-      case "daily": freq = 365; freqString = "daily"; break;
-      case "quarterly": freq = 4; freqString = "quarterly"; break;
-      case "semiannual": freq = 2; freqString = "semi-annually"; break;
-      default: freq = 12; freqString = "monthly";
-    }
-
-    const isFixedRate = fixedRateButton.classList.contains("active");
-    const adjRate = isFixedRate ? baseAnnualRate : baseAnnualRate + 0.01;
-    const comp = parseInt(compoundingFrequency.value, 10);
-    const rPerPeriod = adjRate / comp;
-    const eAR = Math.pow(1 + rPerPeriod, comp) - 1;
-    const eRatePerPayment = eAR / freq;
-    const totalP = theYears * freq;
-
-    let payment = 0;
-    if (!isInsurable) {
-      // do nothing
-    } else if (loanType.value === "interestOnly") {
-      payment = (mortgageLoan + insuranceCost) * eRatePerPayment;
-    } else {
-      payment =
-        ((mortgageLoan + insuranceCost) * eRatePerPayment) /
-        (1 - Math.pow(1 + eRatePerPayment, -totalP));
-    }
-
-    return {
-      scenarioWorks: isInsurable,
-      insuranceCost: textInsurance,
-      payment,
-      freqString,
-    };
-  };
-
-  // Fill out the main details with no-insurance approach
-  const fillOutNoInsuranceMainDetails = (
-    purchasePrice,
-    baseAnnualRate,
-    years,
-    monthlyPayment
-  ) => {
-    let freq;
-    switch (paymentFrequency.value) {
-      case "monthly": freq = 12; break;
-      case "biweekly": freq = 26; break;
-      case "weekly": freq = 52; break;
-      case "daily": freq = 365; break;
-      case "quarterly": freq = 4; break;
-      case "semiannual": freq = 2; break;
-      default: freq = 12;
-    }
-    const isFixedRate = fixedRateButton.classList.contains("active");
-    const adjRate = isFixedRate ? baseAnnualRate : baseAnnualRate + 0.01;
-    const comp = parseInt(compoundingFrequency.value, 10);
-    const rPerPeriod = adjRate / comp;
-    const eAR = Math.pow(1 + rPerPeriod, comp) - 1;
-    const eRatePerPayment = eAR / freq;
-    const totalP = years * freq;
-
-    let type = loanType.value;
-    const totalPayment = monthlyPayment * totalP;
-    const totalInterest = totalPayment - purchasePrice;
-
-    let balanceAfterTerm = 0;
-    let termPrincipalPaid = 0;
-    let termInterestPaid = 0;
-    const rateTermYears = parseInt(rateTerm.value, 10);
-    const termPayments = rateTermYears * freq;
-
-    if (type === "interestOnly") {
-      balanceAfterTerm = purchasePrice;
-      termPrincipalPaid = 0;
-      termInterestPaid = monthlyPayment * termPayments;
-    } else {
-      balanceAfterTerm =
-        purchasePrice * Math.pow(1 + eRatePerPayment, termPayments) -
-        monthlyPayment *
-          ((Math.pow(1 + eRatePerPayment, termPayments) - 1) / eRatePerPayment);
-      termPrincipalPaid = purchasePrice - balanceAfterTerm;
-      termInterestPaid = monthlyPayment * termPayments - termPrincipalPaid;
-    }
-
-    // Payment tab
-    principalPaidDisplay.innerText = formatCurrency(purchasePrice);
-    interestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentDisplay.innerText = formatCurrency(totalPayment);
-    balanceEndOfTermDisplay.innerText = formatCurrency(balanceAfterTerm);
-    effectiveAmortizationDisplay.innerText = `${years} years`;
-
-    // Term tab
-    termPrincipalPaidDisplay.innerText = formatCurrency(termPrincipalPaid);
-    termInterestPaidDisplay.innerText = formatCurrency(termInterestPaid);
-    termTotalPaymentDisplay.innerText = formatCurrency(monthlyPayment * termPayments);
-    termBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    termAmortizationDisplay.innerText = `${years} years`;
-    termYearsDisplay.innerText = rateTermYears;
-
-    // Total tab
-    totalPrincipalPaidDisplay.innerText = formatCurrency(purchasePrice);
-    totalInterestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentOverallDisplay.innerText = formatCurrency(totalPayment);
-    totalBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    totalAmortizationDisplay.innerText = `${years} years`;
-
-    // Progress bars
-    const paymentTabPrincipalRatio = purchasePrice / (purchasePrice + totalInterest);
-    const paymentTabInterestRatio = totalInterest / (purchasePrice + totalInterest);
-    updateProgressBar(
-      paymentTabPrincipalRatio,
-      paymentTabInterestRatio,
-      principalProgress,
-      interestProgress
-    );
-
-    const termSum = termPrincipalPaid + termInterestPaid;
-    const termPrincipalRatio = termSum > 0 ? termPrincipalPaid / termSum : 0;
-    const termInterestRatio = termSum > 0 ? termInterestPaid / termSum : 0;
-    updateProgressBar(
-      termPrincipalRatio,
-      termInterestRatio,
-      termPrincipalProgress,
-      termInterestProgress
-    );
-
-    const overallSum = purchasePrice + totalInterest;
-    const overallPrincipalRatio = overallSum > 0 ? purchasePrice / overallSum : 0;
-    const overallInterestRatio = overallSum > 0 ? totalInterest / overallSum : 0;
-    updateProgressBar(
-      overallPrincipalRatio,
-      overallInterestRatio,
-      totalPrincipalProgress,
-      totalInterestProgress
-    );
-  };
-
-  // Fill out main details if scenario is fully insurable
-  const fillOutMainDetails = (
-    purchasePrice,
-    downPaymentVal,
-    monthlyPayment,
-    baseAnnualRate,
-    years,
-    insuranceCostVal
-  ) => {
-    // principal = (purchase - dp + insurance)
-    const principal = (purchasePrice - downPaymentVal) + parseFloat(insuranceCostVal.replace(/[^0-9.]/g, "")) || 0;
-    let freq;
-    switch (paymentFrequency.value) {
-      case "monthly": freq = 12; break;
-      case "biweekly": freq = 26; break;
-      case "weekly": freq = 52; break;
-      case "daily": freq = 365; break;
-      case "quarterly": freq = 4; break;
-      case "semiannual": freq = 2; break;
-      default: freq = 12;
-    }
-
-    const isFixedRate = fixedRateButton.classList.contains("active");
-    const adjRate = isFixedRate ? baseAnnualRate : baseAnnualRate + 0.01;
-    const comp = parseInt(compoundingFrequency.value, 10);
-    const rPerPeriod = adjRate / comp;
-    const eAR = Math.pow(1 + rPerPeriod, comp) - 1;
-    const eRatePerPayment = eAR / freq;
-    const totalP = years * freq;
-
-    const type = loanType.value;
-    const totalPayment = monthlyPayment * totalP;
-    const totalInterest = totalPayment - principal;
-
-    const rateTermYears = parseInt(rateTerm.value, 10);
-    const termPayments = rateTermYears * freq;
-
-    let balanceAfterTerm = 0;
-    let termPrincipalPaid = 0;
-    let termInterestPaid = 0;
-
-    if (type === "interestOnly") {
-      balanceAfterTerm = principal;
-      termPrincipalPaid = 0;
-      termInterestPaid = monthlyPayment * termPayments;
-    } else {
-      balanceAfterTerm =
-        principal * Math.pow(1 + eRatePerPayment, termPayments) -
-        monthlyPayment *
-          ((Math.pow(1 + eRatePerPayment, termPayments) - 1) / eRatePerPayment);
-      termPrincipalPaid = principal - balanceAfterTerm;
-      termInterestPaid = monthlyPayment * termPayments - termPrincipalPaid;
-    }
-
-    // Payment tab
-    principalPaidDisplay.innerText = formatCurrency(principal);
-    interestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentDisplay.innerText = formatCurrency(totalPayment);
-    balanceEndOfTermDisplay.innerText = formatCurrency(balanceAfterTerm);
-    effectiveAmortizationDisplay.innerText = `${years} years`;
-
-    // Term tab
-    termPrincipalPaidDisplay.innerText = formatCurrency(termPrincipalPaid);
-    termInterestPaidDisplay.innerText = formatCurrency(termInterestPaid);
-    termTotalPaymentDisplay.innerText = formatCurrency(monthlyPayment * termPayments);
-    termBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    termAmortizationDisplay.innerText = `${years} years`;
-    termYearsDisplay.innerText = rateTermYears;
-
-    // Total tab
-    totalPrincipalPaidDisplay.innerText = formatCurrency(principal);
-    totalInterestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentOverallDisplay.innerText = formatCurrency(totalPayment);
-    totalBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    totalAmortizationDisplay.innerText = `${years} years`;
-
-    // Progress bars
-    const paymentTabPrincipalRatio = principal / (principal + totalInterest);
-    const paymentTabInterestRatio = totalInterest / (principal + totalInterest);
-    updateProgressBar(
-      paymentTabPrincipalRatio,
-      paymentTabInterestRatio,
-      principalProgress,
-      interestProgress
-    );
-
-    const termSum = termPrincipalPaid + termInterestPaid;
-    const termPrincipalRatio = termSum > 0 ? termPrincipalPaid / termSum : 0;
-    const termInterestRatio = termSum > 0 ? termInterestPaid / termSum : 0;
-    updateProgressBar(
-      termPrincipalRatio,
-      termInterestRatio,
-      termPrincipalProgress,
-      termInterestProgress
-    );
-
-    const overallSum = principal + totalInterest;
-    const overallPrincipalRatio = overallSum > 0 ? principal / overallSum : 0;
-    const overallInterestRatio = overallSum > 0 ? totalInterest / overallSum : 0;
-    updateProgressBar(
-      overallPrincipalRatio,
-      overallInterestRatio,
-      totalPrincipalProgress,
-      totalInterestProgress
-    );
-  };
-
-  // MAIN CALC
-  const calculateMortgage = () => {
-    // 1. Purchase Price
-    let purchasePrice = parseFloat(mortgageAmount.value);
-    const customAmount = parseFloat(customMortgageAmount.value);
-    if (!isNaN(customAmount) && customAmount > parseFloat(mortgageAmount.max)) {
-      purchasePrice = customAmount;
-    } else if (!isNaN(customAmount) && customAmount >= parseFloat(mortgageAmount.min)) {
-      mortgageAmount.value = customAmount;
-      purchasePrice = customAmount;
-    }
-    mortgageAmountDisplay.innerText = formatCurrency(purchasePrice);
-
-    // 2. Annual Rate
-    const typedRate = parseFloat(customInterestRate.value);
-    if (!isNaN(typedRate) && typedRate >= 1 && typedRate <= 10) {
-      interestRate.value = typedRate;
-    }
-    const baseAnnualRate = parseFloat(interestRate.value) / 100;
-    interestRateDisplay.innerText = interestRate.value + "%";
-
-    // 3. Amortization
-    amortizationDisplay.innerText = `${amortization.value} years`;
-    const years = parseInt(amortization.value, 10);
-
-    // 4. Down Payment
-    const downPaymentVal = parseFloat(downPaymentInput.value) || 0;
-    const propTypeVal = propertyType.value;
-
-    // Hide comparison block by default
-    uninsurableComparison.classList.add("d-none");
-
-    // (A) If DP=0 => old approach
-    if (downPaymentVal === 0) {
-      insuranceCostDisplay.innerText = "$0.00";
-      const scenarioA = runNoInsuranceCalc(purchasePrice, baseAnnualRate, years);
-      monthlyPaymentDisplay.innerHTML = formatCurrency(scenarioA.payment) + ` <sup>${scenarioA.freqString}</sup>`;
-      fillOutNoInsuranceMainDetails(purchasePrice, baseAnnualRate, years, scenarioA.payment);
-      return;
-    }
-
-    // (B) If user DP >= 5% => standard insurance logic
-    if (downPaymentVal >= 0.05 * purchasePrice) {
-      const result = runInsuranceCalc(purchasePrice, downPaymentVal, propTypeVal, baseAnnualRate, years);
-      if (!result.scenarioWorks) {
-        // fallback
-        insuranceCostDisplay.innerText = "N/A";
-        monthlyPaymentDisplay.innerHTML = `$0.00 <sup>N/A</sup>`;
-        zeroOutResults();
-      } else {
-        insuranceCostDisplay.innerText = result.insuranceCost;
-        monthlyPaymentDisplay.innerHTML =
-          formatCurrency(result.payment) + ` <sup>${result.freqString}</sup>`;
-        fillOutMainDetails(
-          purchasePrice,
-          downPaymentVal,
-          result.payment,
-          baseAnnualRate,
-          years,
-          result.insuranceCost
-        );
-      }
-      return;
-    }
-
-    // (C) If 0 < DP < 5% => Comparison
-    const scenarioA = runNoInsuranceCalc(purchasePrice, baseAnnualRate, years); // user scenario ignoring insurance
-    // scenario B => forcing 5%
-    const forcedDownPayment = purchasePrice * 0.05;
-    const scenarioB = runInsuranceCalc(
-      purchasePrice,
-      forcedDownPayment,
-      propTypeVal,
-      baseAnnualRate,
-      years
-    );
-
-    // Show the comparison block
-    uninsurableComparison.classList.remove("d-none");
-
-    // scenario A: in main display
-    insuranceCostDisplay.innerText = "N/A (Below 5%)";
-    monthlyPaymentDisplay.innerHTML =
-      formatCurrency(scenarioA.payment) + ` <sup>${scenarioA.freqString}</sup>`;
-    fillOutNoInsuranceMainDetails(purchasePrice, baseAnnualRate, years, scenarioA.payment);
-
-    // fill the text for scenario A
-    uninsurableUserPayment.innerText =
-      scenarioA.payment > 0
-        ? formatCurrency(scenarioA.payment) + ` (${scenarioA.freqString})`
-        : "$0.00";
-
-    // scenario B
-    if (!scenarioB.scenarioWorks) {
-      uninsurableMinDownPayment.innerText = "N/A (Even 5% is not insurable)";
-    } else {
-      uninsurableMinDownPayment.innerText =
-        formatCurrency(scenarioB.payment) + ` (${scenarioB.freqString})`;
-    }
-  };
-
-  // CSV
+  // Download CSV
   const downloadReport = () => {
     const data = [
+      ["Mortgage Size", mortgageSizeDisplay.innerText],
+      ["Down Payment", downPaymentDisplay.innerText],
       ["Mortgage Payment", monthlyPaymentDisplay.innerText],
-      ["Mortgage Amount", mortgageAmountDisplay.innerText],
-      ["Down Payment", downPaymentInput.value || 0],
-      ["Insurance Cost", insuranceCostDisplay.innerText],
-      ["Principal Paid", principalPaidDisplay.innerText],
-      ["Interest Paid", interestPaidDisplay.innerText],
+      ["Mortgage Insurance Cost", insuranceCostDisplay.innerText],
+      ["Principal Paid (Payment Tab)", principalPaidDisplay.innerText],
+      ["Interest Paid (Payment Tab)", interestPaidDisplay.innerText],
       ["Total Payment (Payment Tab)", totalPaymentDisplay.innerText],
-      ["Balance End of Term", balanceEndOfTermDisplay.innerText],
-      ["Effective Amortization", effectiveAmortizationDisplay.innerText],
+      ["Balance End of Term (Payment Tab)", balanceEndOfTermDisplay.innerText],
+      ["Effective Amortization (Payment Tab)", effectiveAmortizationDisplay.innerText],
       ["Term Principal Paid", termPrincipalPaidDisplay.innerText],
       ["Term Interest Paid", termInterestPaidDisplay.innerText],
       ["Term Total Payment", termTotalPaymentDisplay.innerText],
@@ -560,8 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ["Total Principal Paid (Overall)", totalPrincipalPaidDisplay.innerText],
       ["Total Interest Paid (Overall)", totalInterestPaidDisplay.innerText],
       ["Total Payment (Overall)", totalPaymentOverallDisplay.innerText],
-      ["Total Balance End of Term", totalBalanceDisplay.innerText],
-      ["Total Effective Amortization", totalAmortizationDisplay.innerText],
+      ["Total Balance End of Term (Overall)", totalBalanceDisplay.innerText],
+      ["Total Effective Amortization (Overall)", totalAmortizationDisplay.innerText],
     ];
 
     let csv = data.map((row) => row.join(",")).join("\n");
@@ -578,32 +222,532 @@ document.addEventListener("DOMContentLoaded", () => {
     URL.revokeObjectURL(url);
   };
 
-  // Listeners
-  mortgageAmount.addEventListener("input", calculateMortgage);
-  customMortgageAmount.addEventListener("input", calculateMortgage);
-  interestRate.addEventListener("input", calculateMortgage);
-  customInterestRate.addEventListener("input", calculateMortgage);
-  amortization.addEventListener("input", calculateMortgage);
-  paymentFrequency.addEventListener("change", calculateMortgage);
-  loanType.addEventListener("change", calculateMortgage);
-  compoundingFrequency.addEventListener("change", calculateMortgage);
-  rateTerm.addEventListener("change", calculateMortgage);
+  // Email Results (placeholder)
+  const emailResults = () => {
+    alert("This can be integrated with your CRM/email logic to send results.");
+  };
 
-  downPaymentInput.addEventListener("input", calculateMortgage);
-  propertyType.addEventListener("change", calculateMortgage);
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 3. SYNCHRONIZATION (Slider ↔ Input)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const syncMortgageSizeInput = () => {
+    mortgageSizeSlider.value = mortgageSizeInput.value;
+  };
+  const syncMortgageSizeSlider = () => {
+    mortgageSizeInput.value = mortgageSizeSlider.value;
+  };
 
-  fixedRateButton.addEventListener("click", () => {
-    fixedRateButton.classList.add("active");
-    variableRateButton.classList.remove("active");
+  const syncDownPaymentInput = () => {
+    const sizeVal = parseFloat(mortgageSizeInput.value) || 0;
+    const dpVal = parseFloat(downPaymentInput.value) || 0;
+    if (sizeVal <= 0) {
+      downPaymentSlider.value = 0;
+      downPaymentPercentDisplay.textContent = "0%";
+      return;
+    }
+    const dpPercent = (dpVal / sizeVal) * 100;
+    // clamp
+    let usedPercent = dpPercent < 0 ? 0 : dpPercent;
+    usedPercent = usedPercent > 100 ? 100 : usedPercent;
+    downPaymentSlider.value = usedPercent.toFixed(2);
+    downPaymentPercentDisplay.textContent = `${usedPercent.toFixed(0)}%`;
+  };
+  const syncDownPaymentSlider = () => {
+    const sizeVal = parseFloat(mortgageSizeInput.value) || 0;
+    const sliderVal = parseFloat(downPaymentSlider.value) || 0;
+    const dp = (sliderVal / 100) * sizeVal;
+    downPaymentInput.value = dp.toFixed(0);
+    downPaymentPercentDisplay.textContent = `${sliderVal}%`;
+  };
+
+  const syncInterestRateInput = () => {
+    interestRateSlider.value = interestRateInput.value;
+  };
+  const syncInterestRateSlider = () => {
+    interestRateInput.value = interestRateSlider.value;
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 4. CORE CALCULATION FUNCTIONS
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const zeroOutResults = () => {
+    monthlyPaymentDisplay.innerText = "$0.00";
+    insuranceCostDisplay.innerText = "$0.00";
+
+    // Payment tab
+    principalPaidDisplay.innerText = "$0.00";
+    interestPaidDisplay.innerText = "$0.00";
+    totalPaymentDisplay.innerText = "$0.00";
+    balanceEndOfTermDisplay.innerText = "$0.00";
+    effectiveAmortizationDisplay.innerText = "N/A";
+
+    // Term tab
+    termPrincipalPaidDisplay.innerText = "$0.00";
+    termInterestPaidDisplay.innerText = "$0.00";
+    termTotalPaymentDisplay.innerText = "$0.00";
+    termBalanceDisplay.innerText = "$0.00";
+    termAmortizationDisplay.innerText = "N/A";
+    termYearsDisplay.innerText = "N/A";
+
+    // Total tab
+    totalPrincipalPaidDisplay.innerText = "$0.00";
+    totalInterestPaidDisplay.innerText = "$0.00";
+    totalPaymentOverallDisplay.innerText = "$0.00";
+    totalBalanceDisplay.innerText = "$0.00";
+    totalAmortizationDisplay.innerText = "N/A";
+
+    principalProgress.style.width = "50%";
+    interestProgress.style.width = "50%";
+    termPrincipalProgress.style.width = "50%";
+    termInterestProgress.style.width = "50%";
+    totalPrincipalProgress.style.width = "50%";
+    totalInterestProgress.style.width = "50%";
+  };
+
+  const getEffectiveRate = (annualNominal, freq, isFixed) => {
+    const usedRate = isFixed ? annualNominal : annualNominal + 0.01;
+    const comp = parseInt(compoundingFrequencySelect.value, 10);
+    const rPerPeriod = usedRate / comp;
+    const eAR = Math.pow(1 + rPerPeriod, comp) - 1;
+    return eAR / freq;
+  };
+
+  const calculatePayment = (principal, ratePerPayment, totalPayments, loanType) => {
+    if (loanType === "interestOnly") {
+      return principal * ratePerPayment;
+    }
+    return (
+      (principal * ratePerPayment) /
+      (1 - Math.pow(1 + ratePerPayment, -totalPayments))
+    );
+  };
+
+  const calcNoInsurancePayment = (price, annualRate, freq, years, isFixed, loanType, extraPrepay) => {
+    const r = getEffectiveRate(annualRate, freq, isFixed);
+    const totalP = freq * years;
+    const basePmt = calculatePayment(price, r, totalP, loanType);
+    const prepayPerPayment = extraPrepay / (12 / freq);
+    return basePmt + prepayPerPayment;
+  };
+
+  const calcInsurancePayment = (
+    purchasePrice,
+    dp,
+    insurancePremium,
+    annualRate,
+    freq,
+    years,
+    isFixed,
+    loanType,
+    extraPrepay
+  ) => {
+    const principal = (purchasePrice - dp) + insurancePremium;
+    const r = getEffectiveRate(annualRate, freq, isFixed);
+    const totalP = freq * years;
+    const basePmt = calculatePayment(principal, r, totalP, loanType);
+    const prepayPerPayment = extraPrepay / (12 / freq);
+    return basePmt + prepayPerPayment;
+  };
+
+  function fillBreakdown({
+    principal,
+    monthlyPayment,
+    freq,
+    years,
+    rateTerm,
+    ratePerPayment,
+    loanType,
+  }) {
+    const totalP = freq * years;
+    const totalPaid = monthlyPayment * totalP;
+    const totalInterest = totalPaid - principal;
+
+    // Show Mortgage Size & DP with commas
+    mortgageSizeDisplay.innerText = formatIntegerCurrency(mortgageSizeInput.value);
+    downPaymentDisplay.innerText = formatIntegerCurrency(downPaymentInput.value);
+
+    const termY = rateTerm ? parseInt(rateTerm, 10) : 5;
+    const termP = termY * freq;
+
+    // Payment tab
+    principalPaidDisplay.innerText = formatCurrency(principal);
+    interestPaidDisplay.innerText = formatCurrency(totalInterest);
+    totalPaymentDisplay.innerText = formatCurrency(totalPaid);
+
+    let balanceAfterTerm = 0;
+    let termPrincipalPaid = 0;
+    let termInterestPaid = 0;
+
+    if (loanType === "interestOnly") {
+      balanceAfterTerm = principal;
+      termPrincipalPaid = 0;
+      termInterestPaid = monthlyPayment * termP;
+    } else {
+      balanceAfterTerm =
+        principal * Math.pow(1 + ratePerPayment, termP) -
+        monthlyPayment * ((Math.pow(1 + ratePerPayment, termP) - 1) / ratePerPayment);
+      termPrincipalPaid = principal - balanceAfterTerm;
+      termInterestPaid = monthlyPayment * termP - termPrincipalPaid;
+    }
+
+    balanceEndOfTermDisplay.innerText = formatCurrency(balanceAfterTerm);
+    effectiveAmortizationDisplay.innerText = `${years} years`;
+
+    // Term tab
+    termPrincipalPaidDisplay.innerText = formatCurrency(termPrincipalPaid);
+    termInterestPaidDisplay.innerText = formatCurrency(termInterestPaid);
+    termTotalPaymentDisplay.innerText = formatCurrency(monthlyPayment * termP);
+    termBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
+    termAmortizationDisplay.innerText = `${years} years`;
+    termYearsDisplay.innerText = termY;
+
+    // Total tab
+    totalPrincipalPaidDisplay.innerText = formatCurrency(principal);
+    totalInterestPaidDisplay.innerText = formatCurrency(totalInterest);
+    totalPaymentOverallDisplay.innerText = formatCurrency(totalPaid);
+    totalBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
+    totalAmortizationDisplay.innerText = `${years} years`;
+
+    // progress bars
+    const paySum = principal + totalInterest;
+    const payPrincipalRatio = principal / paySum;
+    const payInterestRatio = totalInterest / paySum;
+    updateProgressBar(payPrincipalRatio, payInterestRatio, principalProgress, interestProgress);
+
+    // Term bars
+    const termSum = termPrincipalPaid + termInterestPaid;
+    const termPrincipalRatio = termSum > 0 ? termPrincipalPaid / termSum : 0;
+    const termInterestRatio = termSum > 0 ? termInterestPaid / termSum : 0;
+    updateProgressBar(termPrincipalRatio, termInterestRatio, termPrincipalProgress, termInterestProgress);
+
+    // total bars
+    updateProgressBar(payPrincipalRatio, payInterestRatio, totalPrincipalProgress, totalInterestProgress);
+  }
+
+  // MAIN
+  const calculateMortgage = () => {
+    uninsurableComparison.classList.add("d-none");
+
+    const purchasePrice = parseFloat(mortgageSizeInput.value) || 0;
+    if (purchasePrice <= 0) {
+      zeroOutResults();
+      return;
+    }
+
+    const dpVal = parseFloat(downPaymentInput.value) || 0;
+    const { freq, label: freqLabel } = getPaymentFrequency();
+    const userRate = parseFloat(interestRateInput.value) || 0;
+    if (userRate <= 0) {
+      zeroOutResults();
+      return;
+    }
+
+    const annualNominalRate = userRate / 100;
+
+    // If you have fixed/variable:
+    let isFixedRate = true;
+    if (fixedRateButton && variableRateButton) {
+      isFixedRate = fixedRateButton.classList.contains("active");
+    }
+
+    const years = parseInt(amortizationRange.value, 10) || 25;
+    amortizationDisplay.innerText = `${years}`;
+
+    let rateTerm = 5;
+    if (rateTermSelect) {
+      rateTerm = rateTermSelect.value;
+    }
+
+    // Advanced
+    const propertyTax = parseFloat(propertyTaxInput.value) || 0;
+    const condoFees = parseFloat(condoFeesInput.value) || 0;
+    const extraPrepayment = parseFloat(extraPrepaymentInput.value) || 0;
+    const chosenLoanType = loanTypeSelect.value;
+
+    // Show/hide carrying costs
+    if (propertyTax > 0 || condoFees > 0) {
+      carryingCostSection.classList.remove("d-none");
+      propertyTaxMonthlyDisplay.innerText = formatCurrency(propertyTax / 12);
+      condoFeesMonthlyDisplay.innerText = formatCurrency(condoFees);
+    } else {
+      carryingCostSection.classList.add("d-none");
+    }
+
+    // Insurance checks
+    const mortgageLoan = purchasePrice - dpVal;
+    const ltv = mortgageLoan / purchasePrice;
+    let scenarioInsurable = true;
+    let insurancePremium = 0;
+
+    if (dpVal <= 0) scenarioInsurable = false;
+    if (dpVal >= 0.2 * purchasePrice) {
+      // no insurance needed
+    } else {
+      if (purchasePrice > 1000000) scenarioInsurable = false;
+      else if (dpVal < 0.05 * purchasePrice) scenarioInsurable = false;
+      else if (propertyType.value === "rental" && ltv > 0.80) scenarioInsurable = false;
+      else {
+        const rate = getInsuranceRate(ltv);
+        if (rate === null) scenarioInsurable = false;
+        else insurancePremium = mortgageLoan * rate;
+      }
+    }
+
+    // <5% => comparison
+    if (dpVal > 0 && dpVal < 0.05 * purchasePrice) {
+      const monthlyA = calcNoInsurancePayment(
+        purchasePrice,
+        annualNominalRate,
+        freq,
+        years,
+        isFixedRate,
+        chosenLoanType,
+        extraPrepayment
+      );
+      monthlyPaymentDisplay.innerText = formatCurrency(monthlyA) + ` / ${freqLabel}`;
+      insuranceCostDisplay.innerText = "N/A (Below 5%)";
+
+      fillBreakdown({
+        principal: purchasePrice,
+        monthlyPayment: monthlyA,
+        freq,
+        years,
+        rateTerm,
+        ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
+        loanType: chosenLoanType,
+      });
+
+      // forced 5%
+      const forcedDP = 0.05 * purchasePrice;
+      const forcedLoan = purchasePrice - forcedDP;
+      const forcedLTV = forcedLoan / purchasePrice;
+      const forcedRate = getInsuranceRate(forcedLTV);
+      if (!forcedRate || purchasePrice > 1000000 || propertyType.value === "rental") {
+        uninsurableMinDownPayment.innerText = "N/A (Even 5% is not insurable)";
+      } else {
+        const forcedPremium = forcedLoan * forcedRate;
+        const forcedMonthly = calcInsurancePayment(
+          purchasePrice,
+          forcedDP,
+          forcedPremium,
+          annualNominalRate,
+          freq,
+          years,
+          isFixedRate,
+          chosenLoanType,
+          extraPrepayment
+        );
+        uninsurableMinDownPayment.innerText = formatCurrency(forcedMonthly) + ` (${freqLabel})`;
+      }
+      uninsurableComparison.classList.remove("d-none");
+      uninsurableUserPayment.innerText = formatCurrency(monthlyA) + ` (${freqLabel})`;
+      return;
+    }
+
+    // If not insurable
+    if (!scenarioInsurable) {
+      const monthlyPmt = calcNoInsurancePayment(
+        purchasePrice,
+        annualNominalRate,
+        freq,
+        years,
+        isFixedRate,
+        chosenLoanType,
+        extraPrepayment
+      );
+      monthlyPaymentDisplay.innerText = formatCurrency(monthlyPmt) + ` / ${freqLabel}`;
+      insuranceCostDisplay.innerText = "N/A";
+      fillBreakdown({
+        principal: purchasePrice,
+        monthlyPayment: monthlyPmt,
+        freq,
+        years,
+        rateTerm,
+        ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
+        loanType: chosenLoanType,
+      });
+      return;
+    }
+
+    // Insurable
+    insuranceCostDisplay.innerText = formatCurrency(insurancePremium);
+    const insuredMonthly = calcInsurancePayment(
+      purchasePrice,
+      dpVal,
+      insurancePremium,
+      annualNominalRate,
+      freq,
+      years,
+      isFixedRate,
+      chosenLoanType,
+      extraPrepayment
+    );
+    monthlyPaymentDisplay.innerText = formatCurrency(insuredMonthly) + ` / ${freqLabel}`;
+
+    fillBreakdown({
+      principal: (purchasePrice - dpVal) + insurancePremium,
+      monthlyPayment: insuredMonthly,
+      freq,
+      years,
+      rateTerm,
+      ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
+      loanType: chosenLoanType,
+    });
+  };
+
+  // Scenario B
+  const calculateScenarioB = () => {
+    scenarioBResult.classList.add("d-none");
+
+    const priceB = parseFloat(scenarioBMortgageAmount.value) || 0;
+    const dpB = parseFloat(scenarioBDownPayment.value) || 0;
+    const rateB = parseFloat(scenarioBInterestRate.value) || 0;
+    const yearsB = parseInt(scenarioBAmortization.value, 10) || 25;
+    const freqVal = scenarioBPaymentFrequency.value;
+
+    if (priceB <= 0 || rateB <= 0 || dpB < 0) {
+      return;
+    }
+
+    let scenarioInsurableB = true;
+    let insuranceB = 0;
+    if (dpB < 0.05 * priceB || priceB > 1000000) {
+      scenarioInsurableB = false;
+    }
+    const ltvB = (priceB - dpB) / priceB;
+    const possibleRate = getInsuranceRate(ltvB);
+    if (!possibleRate) scenarioInsurableB = false;
+
+    const freqData = (() => {
+      switch (freqVal) {
+        case "monthly": return { freq: 12, label: "monthly" };
+        case "biweekly": return { freq: 26, label: "bi-weekly (accelerated)" };
+        case "biweekly-standard": return { freq: 26, label: "bi-weekly (standard)" };
+        case "weekly-accelerated": return { freq: 52, label: "weekly (accelerated)" };
+        case "weekly-standard": return { freq: 52, label: "weekly (standard)" };
+        default: return { freq: 12, label: "monthly" };
+      }
+    })();
+
+    const annualNomB = rateB / 100;
+    const isFixedB = true; // Simplify
+    const chosenLoanTypeB = "regular";
+    const extraB = 0;
+
+    let monthlyB = 0;
+    if (!scenarioInsurableB) {
+      // no insurance
+      monthlyB = calcNoInsurancePayment(
+        priceB,
+        annualNomB,
+        freqData.freq,
+        yearsB,
+        isFixedB,
+        chosenLoanTypeB,
+        extraB
+      );
+      scenarioBInsurance.innerText = "N/A";
+    } else {
+      insuranceB = (priceB - dpB) * possibleRate;
+      const monthlyI = calcInsurancePayment(
+        priceB,
+        dpB,
+        insuranceB,
+        annualNomB,
+        freqData.freq,
+        yearsB,
+        isFixedB,
+        chosenLoanTypeB,
+        extraB
+      );
+      monthlyB = monthlyI;
+      scenarioBInsurance.innerText = formatCurrency(insuranceB);
+    }
+
+    const totalP = freqData.freq * yearsB;
+    const totalPaid = monthlyB * totalP;
+    const principalB = scenarioInsurableB
+      ? (priceB - dpB) + insuranceB
+      : priceB;
+    const interestOverTerm = totalPaid - principalB;
+
+    scenarioBPayment.innerText = formatCurrency(monthlyB);
+    scenarioBInterestPaid.innerText = formatCurrency(interestOverTerm);
+
+    scenarioBResult.classList.remove("d-none");
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 5. EVENT LISTENERS
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // Mortgage Size
+  mortgageSizeInput.addEventListener("input", () => {
+    syncMortgageSizeInput();
+    syncDownPaymentInput();
     calculateMortgage();
   });
-  variableRateButton.addEventListener("click", () => {
-    variableRateButton.classList.add("active");
-    fixedRateButton.classList.remove("active");
+  mortgageSizeSlider.addEventListener("input", () => {
+    syncMortgageSizeSlider();
+    syncDownPaymentInput();
     calculateMortgage();
   });
 
-  // Slide-in config panel
+  // Down Payment
+  downPaymentInput.addEventListener("input", () => {
+    syncDownPaymentInput();
+    calculateMortgage();
+  });
+  downPaymentSlider.addEventListener("input", () => {
+    syncDownPaymentSlider();
+    calculateMortgage();
+  });
+
+  // Interest Rate
+  interestRateInput.addEventListener("input", () => {
+    syncInterestRateInput();
+    calculateMortgage();
+  });
+  interestRateSlider.addEventListener("input", () => {
+    syncInterestRateSlider();
+    calculateMortgage();
+  });
+
+  // Payment Frequency
+  paymentFrequencySelect.addEventListener("change", calculateMortgage);
+  advancedFrequencySelect.addEventListener("change", calculateMortgage);
+
+  // Amortization
+  amortizationRange.addEventListener("input", calculateMortgage);
+
+  // Advanced
+  propertyTaxInput.addEventListener("input", calculateMortgage);
+  condoFeesInput.addEventListener("input", calculateMortgage);
+  extraPrepaymentInput.addEventListener("input", calculateMortgage);
+  loanTypeSelect.addEventListener("change", calculateMortgage);
+  compoundingFrequencySelect.addEventListener("change", calculateMortgage);
+
+  // If you have fixed/variable buttons
+  if (fixedRateButton && variableRateButton) {
+    fixedRateButton.addEventListener("click", () => {
+      fixedRateButton.classList.add("active");
+      variableRateButton.classList.remove("active");
+      calculateMortgage();
+    });
+    variableRateButton.addEventListener("click", () => {
+      variableRateButton.classList.add("active");
+      fixedRateButton.classList.remove("active");
+      calculateMortgage();
+    });
+  }
+
+  // If you have a rateTermSelect
+  if (rateTermSelect) {
+    rateTermSelect.addEventListener("change", calculateMortgage);
+  }
+
+  // Config Panel Slide-in
   configButton.addEventListener("click", () => {
     configPanel.classList.remove("d-none");
     configPanel.style.transform = "translateX(0)";
@@ -615,6 +759,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Download
   downloadReportButton.addEventListener("click", downloadReport);
 
-  // Initial
+  // Email
+  emailResultsButton.addEventListener("click", emailResults);
+
+  // Scenario B
+  calculateScenarioBButton.addEventListener("click", calculateScenarioB);
+
+  // Initial load
+  syncMortgageSizeInput();
+  syncDownPaymentInput();
+  syncInterestRateInput();
   calculateMortgage();
 });

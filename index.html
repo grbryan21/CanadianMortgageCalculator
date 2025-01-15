@@ -27,228 +27,330 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="container mb-5">
     <div class="row">
       <!-- LEFT COLUMN: INPUTS -->
       <div class="col-md-6">
         
-        <!-- Mortgage Amount & Payment Frequency -->
+        <!-- Mortgage Size -->
         <div class="mb-4">
-          <h3 class="section-title">Mortgage Amount</h3>
+          <h2 class="fw-bold">Mortgage Size</h2>
           <div class="mb-3">
-            <input 
-              type="range"
-              id="mortgageAmount"
-              class="form-range"
-              min="100000"
-              max="1500000"
-              step="10000"
-              value="500000"
-            />
-            <div class="d-flex justify-content-between mt-2">
-              <small>$100,000</small>
-              <small id="mortgageAmountDisplay">$500,000</small>
-              <small>$1,500,000</small>
-            </div>
-            <div class="mt-2">
+            <label for="mortgageSize" class="form-label fw-bold">Mortgage Size</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <!-- No min/max here so user can type freely; we'll clamp in JS -->
               <input
                 type="number"
-                id="customMortgageAmount"
                 class="form-control"
-                placeholder="Enter amount (up to $100,000,000)"
+                id="mortgageSize"
+                value="500000"
+                step="1000"
               />
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="paymentFrequency" class="form-label">Payment Frequency</label>
-            <select id="paymentFrequency" class="form-select">
-              <option value="monthly">Monthly</option>
-              <option value="biweekly">Biweekly</option>
-              <option value="weekly">Weekly</option>
-              <option value="daily">Daily</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="semiannual">Semi-Annual</option>
-            </select>
+            <!-- Range Slider for Mortgage Size (up to $5,000,000) -->
+            <input
+              type="range"
+              class="form-range mt-2"
+              id="mortgageSizeSlider"
+              min="100000"
+              max="5000000"
+              step="1000"
+              value="500000"
+            />
           </div>
         </div>
 
         <hr />
 
-        <!-- Down Payment and Property Type -->
+        <!-- Down Payment & Property Type -->
         <div class="mb-4">
-          <h3 class="section-title">Down Payment & Property Type</h3>
-          <p class="section-description">
-            Mortgage loan insurance is provided by CMHC or a private company and is 
-            required for any mortgage where the down payment is less than 20% of the 
-            purchase price or lending value of a home. “Not available” indicates the 
-            loan is uninsurable.
-          </p>
-
-          <!-- Down Payment -->
+          <h2 class="fw-bold">Down Payment &amp; Property Type</h2>
+          <!-- Down Payment Slider + Input Group -->
           <div class="mb-3">
-            <label for="downPayment" class="form-label">Down Payment</label>
+            <label for="downPaymentInput" class="form-label fw-bold">Down Payment</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input
+                type="number"
+                class="form-control"
+                id="downPaymentInput"
+                value="100000"
+                step="1000"
+              />
+            </div>
+            <!-- Slider for Down Payment Percentage (0–100%) -->
             <input
-              type="number"
-              id="downPayment"
-              class="form-control"
-              placeholder="Enter your down payment ($)"
+              type="range"
+              class="form-range mt-2"
+              id="downPaymentSlider"
+              min="0"
+              max="100"
+              step="1"
+              value="20"
             />
+            <!-- NEW: Show the % below the slider for clarity -->
+            <div class="d-flex justify-content-between mt-2">
+              <small>0%</small>
+              <small id="downPaymentPercentDisplay">20%</small>
+              <small>100%</small>
+            </div>
+            <small class="text-muted">
+              Slide to adjust % of Mortgage Size. (Default: 20%)
+            </small>
           </div>
 
           <!-- Property Type -->
           <div class="mb-3">
-            <label for="propertyType" class="form-label">Property Type</label>
+            <label for="propertyType" class="form-label fw-bold">Property Type</label>
             <select id="propertyType" class="form-select">
               <option value="ownerOccupied" selected>Owner-Occupied</option>
               <option value="rental">Rental Property</option>
               <option value="condo">Condo</option>
               <option value="duplex">Duplex/Triplex</option>
-              <!-- Add more if desired -->
             </select>
           </div>
         </div>
 
         <hr />
 
-        <!-- Rate Section -->
+        <!-- Payment Frequency -->
         <div class="mb-4">
-          <h3 class="section-title">Rate</h3>
-          <p class="section-description">
-            Your mortgage interest rate can either be Fixed for the term or Variable 
-            (which changes with the prime rate). The Rate Term is the contract length 
-            with a lender.
-          </p>
-          <div class="mb-3">
+          <h2 class="fw-bold">Payment Frequency</h2>
+          <label for="paymentFrequency" class="form-label fw-bold">Select Frequency</label>
+          <select id="paymentFrequency" class="form-select">
+            <option value="monthly" selected>Monthly</option>
+            <option value="biweekly">Bi-Weekly (Accelerated)</option>
+            <option value="biweekly-standard">Bi-Weekly (Standard)</option>
+            <option value="weekly-accelerated">Weekly (Accelerated)</option>
+            <option value="weekly-standard">Weekly (Standard)</option>
+          </select>
+        </div>
+
+        <hr />
+
+        <!-- Interest Rate -->
+        <div class="mb-4">
+          <h2 class="fw-bold">Rate</h2>
+          <label for="interestRateInput" class="form-label fw-bold">Interest Rate</label>
+          <div class="input-group">
             <input
-              type="range"
-              id="interestRate"
-              class="form-range"
-              min="1"
-              max="10"
-              step="0.1"
-              value="5.25"
+              type="number"
+              class="form-control"
+              id="interestRateInput"
+              value="4.24"
+              step="0.01"
             />
-            <div class="d-flex justify-content-between mt-2">
-              <small>1%</small>
-              <small id="interestRateDisplay">5.25%</small>
-              <small>10%</small>
-            </div>
-            <!-- Custom input for exact rate -->
-            <div class="mt-2">
-              <input
-                type="number"
-                id="customInterestRate"
-                class="form-control"
-                placeholder="Enter exact interest rate (1–10%)"
-                step="0.1"
-                min="1"
-                max="10"
-              />
-            </div>
+            <span class="input-group-text">%</span>
           </div>
-          <label for="rateTerm" class="form-label">Rate Term</label>
-          <div class="d-flex align-items-center">
-            <div class="btn-group me-3" role="group">
-              <button 
-                type="button"
-                id="fixedRate"
-                class="btn btn-outline-primary active"
-              >
-                Fixed
-              </button>
-              <button
-                type="button"
-                id="variableRate"
-                class="btn btn-outline-primary"
-              >
-                Variable
-              </button>
-            </div>
-            <select id="rateTerm" class="form-select w-auto">
-              <option value="1">1 Year</option>
-              <option value="2">2 Years</option>
-              <option value="3">3 Years</option>
-              <option value="4">4 Years</option>
-              <option value="5" selected>5 Years</option>
-              <option value="6">6 Years</option>
-              <option value="7">7 Years</option>
-              <option value="10">10 Years</option>
-            </select>
+          <!-- Range slider for 1–10% -->
+          <input
+            type="range"
+            class="form-range mt-2"
+            id="interestRateSlider"
+            min="1"
+            max="10"
+            step="0.01"
+            value="4.24"
+          />
+        </div>
+
+        <hr />
+
+        <!-- Amortization -->
+        <div class="mb-4">
+          <h2 class="fw-bold">Amortization</h2>
+          <label for="amortization" class="form-label fw-bold">Amortization (years)</label>
+          <input
+            type="range"
+            id="amortization"
+            class="form-range"
+            min="5"
+            max="30"
+            step="1"
+            value="25"
+          />
+          <div class="d-flex justify-content-between mt-2">
+            <small>5</small>
+            <small id="amortizationDisplay">25</small>
+            <small>30</small>
           </div>
         </div>
 
         <hr />
 
-        <!-- Amortization Section -->
+        <!-- ADVANCED OPTIONS (COLLAPSE) -->
         <div class="mb-4">
-          <h3 class="section-title">Amortization</h3>
-          <p class="section-description">
-            Amortization is the total time it takes to pay off your mortgage in full. 
-            New mortgages usually start with an amortization of 25 years or 30 years in Canada.
-          </p>
-          <div class="mb-3">
-            <input
-              type="range"
-              id="amortization"
-              class="form-range"
-              min="5"
-              max="30"
-              step="1"
-              value="25"
-            />
-            <div class="d-flex justify-content-between mt-2">
-              <small>5 years</small>
-              <small id="amortizationDisplay">25 years</small>
-              <small>30 years</small>
+          <button 
+            class="btn btn-link p-0 advanced-toggle fw-bold" 
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#advancedSection"
+            aria-expanded="false"
+            aria-controls="advancedSection"
+          >
+            <i class="bi bi-chevron-down"></i> Show Advanced Options
+          </button>
+          <div class="collapse mt-3" id="advancedSection">
+            <div class="advanced-options p-3 border rounded">
+              <h5 class="fw-bold mb-3">Advanced Options</h5>
+
+              <!-- Additional Payment Frequencies -->
+              <div class="mb-3">
+                <label for="advancedFrequency" class="form-label fw-bold">
+                  Additional Frequencies
+                </label>
+                <select id="advancedFrequency" class="form-select">
+                  <option value="none" selected>None (Use primary selection above)</option>
+                  <option value="semiannual">Semi-Annual</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="daily">Daily</option>
+                </select>
+                <small class="text-muted">Rarely used; included for special scenarios.</small>
+              </div>
+
+              <!-- Property Tax -->
+              <div class="mb-3">
+                <label for="propertyTax" class="form-label fw-bold">
+                  Annual Property Tax (Optional)
+                </label>
+                <input
+                  type="number"
+                  id="propertyTax"
+                  class="form-control"
+                  placeholder="e.g. 3000"
+                />
+                <small class="text-muted">
+                  Used to estimate monthly carrying costs.
+                </small>
+              </div>
+
+              <!-- Condo Fees -->
+              <div class="mb-3">
+                <label for="condoFees" class="form-label fw-bold">
+                  Monthly Condo Fees (Optional)
+                </label>
+                <input
+                  type="number"
+                  id="condoFees"
+                  class="form-control"
+                  placeholder="e.g. 500"
+                />
+                <small class="text-muted">
+                  Relevant if 'Condo' is selected as Property Type.
+                </small>
+              </div>
+
+              <!-- Extra Monthly Prepayment -->
+              <div class="mb-3">
+                <label for="extraPrepayment" class="form-label fw-bold">
+                  Extra Monthly Prepayment
+                </label>
+                <input
+                  type="number"
+                  id="extraPrepayment"
+                  class="form-control"
+                  placeholder="e.g. 100"
+                />
+                <small class="text-muted">
+                  Additional amount applied to principal each month.
+                </small>
+              </div>
+
+              <!-- Advanced Compounding & Loan Type -->
+              <div class="mb-3">
+                <label for="loanType" class="form-label fw-bold">Loan Type</label>
+                <select id="loanType" class="form-select">
+                  <option value="regular" selected>Regular (Compounded Monthly)</option>
+                  <option value="interestOnly">Interest-Only</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="compoundingFrequency" class="form-label fw-bold">
+                  Compounding Frequency
+                </label>
+                <select id="compoundingFrequency" class="form-select">
+                  <option value="12" selected>Monthly</option>
+                  <option value="52">Weekly</option>
+                  <option value="26">Bi-Weekly</option>
+                  <option value="4">Quarterly</option>
+                  <option value="2">Semi-Annually</option>
+                  <option value="365">Daily</option>
+                </select>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
+
+      </div><!-- END LEFT COLUMN -->
 
       <!-- RIGHT COLUMN: RESULTS -->
       <div class="col-md-6">
         <div class="results-card">
           <div class="config-icon">
-            <button id="configButton" class="btn btn-link">
+            <button id="configButton" class="btn btn-link" aria-label="Open Configuration Panel">
               <i class="bi bi-gear-fill"></i>
             </button>
           </div>
-          <h5>Mortgage Payment</h5>
-          <!-- We'll insert the payment + frequency via JS -->
-          <h3 id="monthlyPaymentDisplay">$0.00</h3>
+          
+          <!-- NEW: Show Mortgage Size & Down Payment with commas -->
+          <p class="mb-0">
+            <strong>Mortgage Size:</strong> 
+            <span id="mortgageSizeDisplay">$0.00</span>
+          </p>
+          <p>
+            <strong>Down Payment:</strong> 
+            <span id="downPaymentDisplay">$0.00</span>
+          </p>
 
-          <!-- Mortgage Loan Insurance Cost -->
-          <p class="mt-3">
+          <h5 class="mb-1 fw-bold">Mortgage Payment</h5>
+          <!-- Bolder + frequency shown in strong -->
+          <h3 id="monthlyPaymentDisplay" class="mb-3 fw-bold">$0.00</h3>
+
+          <!-- Mortgage Insurance -->
+          <p>
             Mortgage Loan Insurance Cost:
             <strong id="insuranceCostDisplay">$0.00</strong>
           </p>
 
+          <!-- Monthly Carrying Cost (Property Tax + Condo Fees) -->
+          <div id="carryingCostSection" class="d-none">
+            <p class="mt-3 mb-0 fw-bold">Estimated Monthly Carrying Costs</p>
+            <ul>
+              <li>Property Tax Portion: <strong id="propertyTaxMonthlyDisplay">$0.00</strong></li>
+              <li>Condo Fees: <strong id="condoFeesMonthlyDisplay">$0.00</strong></li>
+            </ul>
+          </div>
+
           <hr />
-          <ul class="nav nav-tabs" id="resultsTabs">
-            <li class="nav-item">
+          <ul class="nav nav-tabs" id="resultsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
               <button 
                 class="nav-link active" 
                 data-bs-toggle="tab" 
                 data-bs-target="#paymentTab"
+                type="button" role="tab"
               >
                 Payment
               </button>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" role="presentation">
               <button 
                 class="nav-link" 
                 data-bs-toggle="tab" 
                 data-bs-target="#termTab"
+                type="button" role="tab"
               >
                 Term
               </button>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" role="presentation">
               <button 
                 class="nav-link" 
                 data-bs-toggle="tab" 
                 data-bs-target="#totalTab"
+                type="button" role="tab"
               >
                 Total
               </button>
@@ -257,8 +359,8 @@
 
           <div class="tab-content mt-3">
             <!-- Payment Tab -->
-            <div class="tab-pane fade show active" id="paymentTab">
-              <h6>Payment Breakdown</h6>
+            <div class="tab-pane fade show active" id="paymentTab" role="tabpanel">
+              <h6 class="fw-bold">Payment Breakdown</h6>
               <div class="progress">
                 <div 
                   id="principalProgress"
@@ -267,7 +369,7 @@
                 ></div>
                 <div 
                   id="interestProgress"
-                  class="progress-bar bg-secondary"
+                  class="progress-bar"
                   style="width: 50%;"
                 ></div>
               </div>
@@ -291,8 +393,8 @@
             </div>
 
             <!-- Term Tab -->
-            <div class="tab-pane fade" id="termTab">
-              <h6>
+            <div class="tab-pane fade" id="termTab" role="tabpanel">
+              <h6 class="fw-bold">
                 Breakdown over <span id="termYearsDisplay">5</span> years
               </h6>
               <div class="progress">
@@ -303,11 +405,11 @@
                 ></div>
                 <div 
                   id="termInterestProgress"
-                  class="progress-bar bg-secondary"
+                  class="progress-bar"
                   style="width: 50%;"
                 ></div>
               </div>
-              <p>
+              <p class="mt-2">
                 Principal Paid: 
                 <strong id="termPrincipalPaidDisplay">$0.00</strong>
               </p>
@@ -330,8 +432,8 @@
             </div>
 
             <!-- Total Tab -->
-            <div class="tab-pane fade" id="totalTab">
-              <h6>Total Breakdown</h6>
+            <div class="tab-pane fade" id="totalTab" role="tabpanel">
+              <h6 class="fw-bold">Total Breakdown</h6>
               <div class="progress">
                 <div
                   id="totalPrincipalProgress"
@@ -340,11 +442,11 @@
                 ></div>
                 <div
                   id="totalInterestProgress"
-                  class="progress-bar bg-secondary"
+                  class="progress-bar"
                   style="width: 50%;"
                 ></div>
               </div>
-              <p>
+              <p class="mt-2">
                 Principal Paid: 
                 <strong id="totalPrincipalPaidDisplay">$0.00</strong>
               </p>
@@ -367,19 +469,36 @@
             </div>
           </div>
 
-          <button
-            id="downloadReport"
-            class="btn btn-primary w-100 mt-3"
-          >
-            Download Report
-          </button>
+          <!-- CTA Buttons -->
+          <div class="mt-3 d-flex flex-column gap-2">
+            <button
+              id="downloadReport"
+              class="btn btn-primary w-100"
+            >
+              Download Report
+            </button>
+            <button
+              id="emailResults"
+              class="btn btn-outline-primary w-100"
+            >
+              Email My Results
+            </button>
+            <a 
+              href="https://thegenesisgroup.ca/apply-now/"
+              class="btn btn-success w-100"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Apply Now
+            </a>
+          </div>
 
           <!-- BELOW: COMPARISON FOR <5% DOWN -->
           <div 
             id="uninsurableComparison"
             class="comparison-section alert alert-warning mt-4 d-none"
           >
-            <h6>Comparison: Your Scenario vs. Minimum 5% Scenario</h6>
+            <h6 class="fw-bold">Comparison: Your Scenario vs. Minimum 5% Scenario</h6>
             <p>
               <strong>Your Scenario (Below 5% Down)</strong><br/>
               Payment ignoring insurance: 
@@ -392,38 +511,119 @@
             </p>
           </div>
         </div>
+      </div><!-- END RIGHT COLUMN -->
+    </div><!-- END ROW -->
+
+    <!-- SCENARIO COMPARISON SECTION -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <h2 class="fw-bold mb-3">Compare Two Scenarios</h2>
+        <p class="text-muted">
+          Quickly see how different down payments or rates can change your monthly payment.
+        </p>
+        <button class="btn btn-link p-0 comparison-toggle fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#comparisonSection">
+          <i class="bi bi-chevron-down"></i> Show Comparison
+        </button>
+        <div class="collapse mt-3" id="comparisonSection">
+          <div class="comparison-box p-3 border rounded">
+            <!-- Placeholder for scenario B fields; replicate core inputs in a simpler form -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Scenario B: Mortgage Amount</label>
+                <input
+                  type="number"
+                  id="scenarioBMortgageAmount"
+                  class="form-control"
+                  placeholder="e.g. 600000"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Down Payment</label>
+                <input
+                  type="number"
+                  id="scenarioBDownPayment"
+                  class="form-control"
+                  placeholder="e.g. 50000"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Interest Rate (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  max="10"
+                  id="scenarioBInterestRate"
+                  class="form-control"
+                  placeholder="e.g. 4.5"
+                />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Amortization (years)</label>
+                <input
+                  type="number"
+                  id="scenarioBAmortization"
+                  class="form-control"
+                  min="5"
+                  max="30"
+                  placeholder="e.g. 25"
+                />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Payment Frequency</label>
+                <select id="scenarioBPaymentFrequency" class="form-select">
+                  <option value="monthly" selected>Monthly</option>
+                  <option value="biweekly">Bi-Weekly (Accelerated)</option>
+                  <option value="biweekly-standard">Bi-Weekly (Standard)</option>
+                  <option value="weekly-accelerated">Weekly (Accelerated)</option>
+                  <option value="weekly-standard">Weekly (Standard)</option>
+                </select>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-primary w-100" id="calculateScenarioB">
+                  Calculate Scenario B
+                </button>
+              </div>
+            </div>
+
+            <!-- Results for Scenario B -->
+            <div id="scenarioBResult" class="alert alert-secondary d-none">
+              <h5 class="fw-bold">Scenario B Result</h5>
+              <p class="mb-1">
+                Monthly Payment: <strong id="scenarioBPayment">$0.00</strong>
+              </p>
+              <p class="mb-1">
+                Interest Paid Over Term: <strong id="scenarioBInterestPaid">$0.00</strong>
+              </p>
+              <p class="mb-1">
+                Mortgage Insurance: <strong id="scenarioBInsurance">$0.00</strong>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </div><!-- END SCENARIO COMPARISON ROW -->
+  </div><!-- END CONTAINER -->
 
   <!-- CONFIGURATION PANEL (SLIDE-IN) -->
   <div id="configPanel" class="config-panel d-none">
-    <h5 class="mb-3">Configuration</h5>
-    <div class="mb-3">
-      <label for="loanType" class="form-label">Loan Type</label>
-      <select id="loanType" class="form-select">
-        <option value="regular" selected>Regular (Compounded Monthly)</option>
-        <option value="interestOnly">Interest-Only</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="compoundingFrequency" class="form-label">Compounding Frequency</label>
-      <select id="compoundingFrequency" class="form-select">
-        <option value="12" selected>Monthly</option>
-        <option value="52">Weekly</option>
-        <option value="26">Bi-Weekly</option>
-        <option value="4">Quarterly</option>
-        <option value="2">Semi-Annually</option>
-        <option value="365">Daily</option>
-      </select>
-    </div>
-    <button id="closeConfig" class="btn btn-secondary w-100">Close</button>
+    <h5 class="mb-3 fw-bold">Configuration</h5>
+    <p class="text-muted">
+      Configure additional parameters like compounding or loan type in the 
+      "Advanced Options" section.
+    </p>
+    <button id="closeConfig" class="btn btn-secondary w-100 mt-3">
+      Close
+    </button>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- BOOTSTRAP JS + YOUR SCRIPT -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
   ></script>
+  <!-- Link to your final script.js -->
   <script src="script.js"></script>
 </body>
 </html>
