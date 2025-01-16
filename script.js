@@ -755,3 +755,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initSync();
   calculateMortgage();
 });
+
+function sendHeightToParent() {
+  const height = document.body.scrollHeight;
+  window.parent.postMessage({ height: height }, "*");
+}
+
+window.addEventListener("resize", sendHeightToParent);
+document.addEventListener("DOMContentLoaded", sendHeightToParent);
