@@ -757,9 +757,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function sendHeightToParent() {
-  const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "https://grbryan21.github.io/CanadianMortgageCalculator/");
+  const height = document.documentElement.scrollHeight; // Get the total height of the child page
+  window.parent.postMessage({ height }, "https://thegenesisgroup.ca"); // Replace with the parent domain
 }
 
-window.addEventListener("resize", sendHeightToParent);
 document.addEventListener("DOMContentLoaded", sendHeightToParent);
+window.addEventListener("resize", sendHeightToParent);
+
+
