@@ -757,11 +757,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function sendHeightToParent() {
-  const height = document.documentElement.scrollHeight; // Get the total height of the child page
-  window.parent.postMessage({ height }, "https://thegenesisgroup.ca"); // Replace with the parent domain
+  const height = document.documentElement.scrollHeight; // Get total height of the child page
+  window.parent.postMessage({ height }, "https://thegenesisgroup.ca"); // Only send to the parent domain
 }
 
+// Send the height on load and on resize
 document.addEventListener("DOMContentLoaded", sendHeightToParent);
 window.addEventListener("resize", sendHeightToParent);
+
+// Listen for a specific "requestHeight" message from the parent
+window.addEventListener("message", (event) => {
+  if (event.data && event.data.requestHeight) {
+      sendHeightToParent();
+  }
+});
+
 
 
