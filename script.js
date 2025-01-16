@@ -756,38 +756,14 @@ document.addEventListener("DOMContentLoaded", () => {
   calculateMortgage();
 });
 
-let lastSentHeight = 0; // Cache the last height sent to the parent
-const debounceDelay = 200; // Delay in milliseconds
+// Add the Genesis Group domain as a trusted parent
+const trustedParentOrigin = 'https://thegenesisgroup.ca';
 
-function sendHeightToParent() {
-    const newHeight = document.documentElement.scrollHeight;
-    
-    // Only send if the height has changed significantly
-    if (Math.abs(newHeight - lastSentHeight) > 5) {
-        lastSentHeight = newHeight;
-        window.parent.postMessage({ height: newHeight }, "https://thegenesisgroup.ca");
-    }
-}
-
-// Debounce height updates
-const debounce = (fn, delay) => {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-};
-
-const debouncedSendHeight = debounce(sendHeightToParent, debounceDelay);
-
-// Send height on load and on resize, using debouncing
-document.addEventListener("DOMContentLoaded", sendHeightToParent);
-window.addEventListener("resize", debouncedSendHeight);
-
-// Listen for explicit height requests from the parent
-window.addEventListener("message", (event) => {
-    if (event.data && event.data.requestHeight) {
-        sendHeightToParent();
+window.addEventListener('message', (event) => {
+    // Check if the request originates from the trusted domain
+    if (event.origin === trustedParentOrigin && event.data.requestHeight) {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ height }, trustedParentOrigin);
     }
 });
 
