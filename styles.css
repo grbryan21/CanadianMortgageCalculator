@@ -3,52 +3,72 @@ body {
   font-family: 'Lato', sans-serif;
   font-size: 16px;
   background-color: #f7f7ff;
-  color: #2d232e;
+  color: #2d232e; /* Paragraph text color */
   margin: 0;
   padding: 0;
 }
 
-.container {
+.heading-color {
+  color: #2d423f !important; /* Headings color */
+}
+.results-color {
+  color: #2d232e !important; /* Large font results color */
+}
+
+.container-fluid {
   max-width: 1200px;
-  margin: auto;
-  padding-top: 2rem;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Lora', serif;
-  color: #2D423F;
-  font-weight: 700; /* Make headings bold */
+  font-weight: 700;
 }
 
-/* 2. HEADINGS */
-.fw-bold {
-  font-weight: 700 !important;
+/* Input-column background */
+.input-column {
+  background-color: #fff;
 }
 
-/* 3. SLIDERS (FORM-RANGE) */
-.form-range {
+/* Sticky results with no internal scroll */
+.sticky-results {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+/* 2. CUSTOM SLIDERS & INPUTS */
+.custom-input {
+  background-color: #dae7e0;
+  border: 1px solid #ccc;
+}
+.custom-input:hover {
+  background-color: #f7f7ff;
+}
+
+.custom-slider {
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
-  background: #dae7e0; /* track background */
+  background: #dae7e0;
   border-radius: 3px;
   outline: none;
   cursor: pointer;
-  transition: background 0.15s ease-in-out;
 }
-
-/* Thumb */
-.form-range::-webkit-slider-thumb {
+.custom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 20px;
   width: 20px;
   background-color: #014e4e;
   border-radius: 50%;
   border: 2px solid #f7f7ff;
-  margin-top: -7px; /* center the thumb on track */
+  margin-top: -7px;
   cursor: pointer;
 }
-.form-range::-moz-range-thumb {
+.custom-slider::-moz-range-thumb {
   height: 20px;
   width: 20px;
   background-color: #014e4e;
@@ -56,9 +76,8 @@ h1, h2, h3, h4, h5, h6 {
   border: 2px solid #f7f7ff;
   cursor: pointer;
 }
-
-/* Track Fill (Gradient) */
-.form-range::-webkit-slider-runnable-track {
+/* Gradient track fill */
+.custom-slider::-webkit-slider-runnable-track {
   background: linear-gradient(
     90deg,
     #014E4E 0%,
@@ -69,7 +88,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 3px;
   height: 6px;
 }
-.form-range::-moz-range-track {
+.custom-slider::-moz-range-track {
   background: linear-gradient(
     90deg,
     #014E4E 0%,
@@ -81,36 +100,44 @@ h1, h2, h3, h4, h5, h6 {
   height: 6px;
 }
 
-/* 4. RESULTS CARD */
+/* 3. RESULTS CARD */
 .results-card {
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   padding: 20px;
   background-color: #fff;
   position: relative;
-  margin-top: 2rem;
-}
-.results-card h5 {
-  color: #014e4e;
-  margin-bottom: 0.5rem;
-}
-.results-card h3 {
-  font-size: 2rem;
-  color: #014e4e;
-  margin-bottom: 1rem;
-  font-weight: 700; /* Extra emphasis */
+  margin-top: 1rem;
+  height: 100%;
 }
 
-/* 5. NAV TABS */
-.nav-tabs .nav-link {
-  color: #0f7570;
+/* Hide the gear icon config by default */
+.config-icon {
+  display: none; /* or comment out if you prefer */
 }
-.nav-tabs .nav-link.active {
+
+.bullet {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.bullet-teal {
+  background-color: #014e4e;
+}
+.bullet-green {
   background-color: #0f7570;
-  color: #fff;
+}
+.bullet-pink {
+  background-color: #b38d97;
+}
+.bullet-gray {
+  background-color: #dae7e0;
 }
 
-/* 6. PROGRESS BARS - brand gradient for consistency */
+/* PROGRESS BARS - brand gradient for consistency */
 .progress-bar {
   background: linear-gradient(
     90deg,
@@ -121,14 +148,7 @@ h1, h2, h3, h4, h5, h6 {
   ) !important;
 }
 
-/* 7. SEPARATORS */
-hr {
-  border: 0;
-  border-top: 1px dashed #dae7e0;
-  margin: 2rem 0;
-}
-
-/* 8. BUTTONS */
+/* BUTTONS */
 .btn-primary {
   background-color: #0f7570 !important;
   border-color: #0f7570 !important;
@@ -136,15 +156,6 @@ hr {
 .btn-primary:hover {
   background-color: #014e4e !important;
   border-color: #014e4e !important;
-}
-.btn-outline-primary {
-  color: #0f7570 !important;
-  border-color: #0f7570 !important;
-}
-.btn-outline-primary:hover {
-  background-color: #0f7570 !important;
-  color: #fff !important;
-  border-color: #0f7570 !important;
 }
 .btn-success {
   background-color: #0f7570 !important;
@@ -155,71 +166,37 @@ hr {
   border-color: #014e4e !important;
 }
 
-/* 9. CONFIG ICON */
-.config-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+/* SCENARIO COMPARISON */
+.comparison-section {
+  border: 1px solid #ffc107;
 }
-.config-icon button {
-  border: none;
-  background: none;
-  font-size: 1.5rem;
-  color: #014e4e;
-  cursor: pointer;
-}
-
-/* 10. CONFIG PANEL (Slide-in) */
-.config-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 100%;
-  background-color: #f8f9fa;
-  border-left: 1px solid #ddd;
-  padding: 20px;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
-  z-index: 9999;
-}
-.d-none {
-  display: none !important;
-}
-
-/* 11. TOGGLES & COLLAPSIBLES */
-.advanced-toggle,
-.comparison-toggle {
-  color: #014e4e;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: 700;
-}
-.advanced-toggle i,
-.comparison-toggle i {
-  font-size: 1rem;
-  margin-right: 4px;
-}
-
-.advanced-options,
 .comparison-box {
   background-color: #fff;
 }
 
-/* 12. COMPARISON SECTION */
-.comparison-section {
-  border: 1px solid #ffc107;
+/* DETAIL SECTION LAYOUT */
+.detail-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 1rem;
 }
-.comparison-section h6 {
-  margin-bottom: 1rem;
+.detail-hr {
+  border: 0;
+  border-top: 1px dashed #dae7e0;
+  margin: 0.4rem 0;
 }
 
-/* 13. RESPONSIVE TWEAKS */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .results-card {
-    margin-top: 1rem;
+  .sticky-results {
+    position: static;
+    height: auto;
+    overflow: visible;
   }
-  .comparison-box {
+  .results-card {
+    height: auto;
     margin-top: 1rem;
   }
 }

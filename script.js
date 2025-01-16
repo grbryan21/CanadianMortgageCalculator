@@ -1,773 +1,757 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 1. ELEMENT REFERENCES
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  // Mortgage Size
-  const mortgageSizeInput = document.getElementById("mortgageSize");
-  const mortgageSizeSlider = document.getElementById("mortgageSizeSlider");
-
-  // Down Payment
-  const downPaymentInput = document.getElementById("downPaymentInput");
-  const downPaymentSlider = document.getElementById("downPaymentSlider");
-  const downPaymentPercentDisplay = document.getElementById("downPaymentPercentDisplay");
-  const propertyType = document.getElementById("propertyType");
-
-  // Payment Frequency
-  const paymentFrequencySelect = document.getElementById("paymentFrequency");
-  const advancedFrequencySelect = document.getElementById("advancedFrequency");
-
-  // Interest Rate
-  const interestRateInput = document.getElementById("interestRateInput");
-  const interestRateSlider = document.getElementById("interestRateSlider");
-
-  // Amortization
-  const amortizationRange = document.getElementById("amortization");
-  const amortizationDisplay = document.getElementById("amortizationDisplay");
-
-  // Advanced Options
-  const propertyTaxInput = document.getElementById("propertyTax");
-  const condoFeesInput = document.getElementById("condoFees");
-  const extraPrepaymentInput = document.getElementById("extraPrepayment");
-  const loanTypeSelect = document.getElementById("loanType");
-  const compoundingFrequencySelect = document.getElementById("compoundingFrequency");
-
-  // Results - Show Mortgage Size & Down Payment in the results card
-  const mortgageSizeDisplay = document.getElementById("mortgageSizeDisplay");
-  const downPaymentDisplay = document.getElementById("downPaymentDisplay");
-
-  // Results - Main Payment
-  const monthlyPaymentDisplay = document.getElementById("monthlyPaymentDisplay");
-  const insuranceCostDisplay = document.getElementById("insuranceCostDisplay");
-
-  // Carrying Costs
-  const carryingCostSection = document.getElementById("carryingCostSection");
-  const propertyTaxMonthlyDisplay = document.getElementById("propertyTaxMonthlyDisplay");
-  const condoFeesMonthlyDisplay = document.getElementById("condoFeesMonthlyDisplay");
-
-  // Payment Tab
-  const principalPaidDisplay = document.getElementById("principalPaidDisplay");
-  const interestPaidDisplay = document.getElementById("interestPaidDisplay");
-  const totalPaymentDisplay = document.getElementById("totalPaymentDisplay");
-  const balanceEndOfTermDisplay = document.getElementById("balanceEndOfTermDisplay");
-  const effectiveAmortizationDisplay = document.getElementById("effectiveAmortizationDisplay");
-
-  // Term Tab
-  const termPrincipalPaidDisplay = document.getElementById("termPrincipalPaidDisplay");
-  const termInterestPaidDisplay = document.getElementById("termInterestPaidDisplay");
-  const termTotalPaymentDisplay = document.getElementById("termTotalPaymentDisplay");
-  const termBalanceDisplay = document.getElementById("termBalanceDisplay");
-  const termAmortizationDisplay = document.getElementById("termAmortizationDisplay");
-  const termYearsDisplay = document.getElementById("termYearsDisplay");
-
-  // Total Tab
-  const totalPrincipalPaidDisplay = document.getElementById("totalPrincipalPaidDisplay");
-  const totalInterestPaidDisplay = document.getElementById("totalInterestPaidDisplay");
-  const totalPaymentOverallDisplay = document.getElementById("totalPaymentOverallDisplay");
-  const totalBalanceDisplay = document.getElementById("totalBalanceDisplay");
-  const totalAmortizationDisplay = document.getElementById("totalAmortizationDisplay");
-
-  // Progress Bars
-  const principalProgress = document.getElementById("principalProgress");
-  const interestProgress = document.getElementById("interestProgress");
-  const termPrincipalProgress = document.getElementById("termPrincipalProgress");
-  const termInterestProgress = document.getElementById("termInterestProgress");
-  const totalPrincipalProgress = document.getElementById("totalPrincipalProgress");
-  const totalInterestProgress = document.getElementById("totalInterestProgress");
-
-  // Comparison <5% Down
-  const uninsurableComparison = document.getElementById("uninsurableComparison");
-  const uninsurableUserPayment = document.getElementById("uninsurableUserPayment");
-  const uninsurableMinDownPayment = document.getElementById("uninsurableMinDownPayment");
-
-  // Configuration Panel
-  const configButton = document.getElementById("configButton");
-  const configPanel = document.getElementById("configPanel");
-  const closeConfig = document.getElementById("closeConfig");
-
-  // Download + Email
-  const downloadReportButton = document.getElementById("downloadReport");
-  const emailResultsButton = document.getElementById("emailResults");
-
-  // Rate Type Buttons (If you have them)
-  // If not, remove these references
-  const fixedRateButton = document.getElementById("fixedRate");
-  const variableRateButton = document.getElementById("variableRate");
-
-  // Rate Term (If you have a dropdown for rate term)
-  const rateTermSelect = document.getElementById("rateTerm");
-
-  // Scenario B elements
-  const scenarioBMortgageAmount = document.getElementById("scenarioBMortgageAmount");
-  const scenarioBDownPayment = document.getElementById("scenarioBDownPayment");
-  const scenarioBInterestRate = document.getElementById("scenarioBInterestRate");
-  const scenarioBAmortization = document.getElementById("scenarioBAmortization");
-  const scenarioBPaymentFrequency = document.getElementById("scenarioBPaymentFrequency");
-  const calculateScenarioBButton = document.getElementById("calculateScenarioB");
-  const scenarioBResult = document.getElementById("scenarioBResult");
-  const scenarioBPayment = document.getElementById("scenarioBPayment");
-  const scenarioBInterestPaid = document.getElementById("scenarioBInterestPaid");
-  const scenarioBInsurance = document.getElementById("scenarioBInsurance");
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 2. UTILITY FUNCTIONS
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  // Format currency with commas
-  const formatCurrency = (amount) => {
-    if (isNaN(amount) || amount === null) return "$0.00";
-    return `$${parseFloat(amount).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
-
-  // For integer display of mortgage size / down payment (no decimals)
-  const formatIntegerCurrency = (amount) => {
-    if (isNaN(amount) || amount === null) return "$0";
-    return `$${parseInt(amount, 10).toLocaleString(undefined)}`;
-  };
-
-  // Update progress bar
-  const updateProgressBar = (principalRatio, interestRatio, principalBar, interestBar) => {
-    if (
-      isNaN(principalRatio) ||
-      isNaN(interestRatio) ||
-      principalRatio < 0 ||
-      interestRatio < 0
-    ) {
-      principalBar.style.width = "50%";
-      interestBar.style.width = "50%";
-      return;
-    }
-    principalBar.style.width = (principalRatio * 100).toFixed(2) + "%";
-    interestBar.style.width = (interestRatio * 100).toFixed(2) + "%";
-  };
-
-  // Payment Frequency
-  const getPaymentFrequency = () => {
-    // If user selected an advanced frequency
-    const advFreq = advancedFrequencySelect.value;
-    if (advFreq !== "none") {
-      switch (advFreq) {
-        case "semiannual": return { freq: 2, label: "semi-annually" };
-        case "quarterly": return { freq: 4, label: "quarterly" };
-        case "daily": return { freq: 365, label: "daily" };
-        default: return { freq: 12, label: "monthly" };
-      }
-    }
-    // Otherwise, standard freq
-    switch (paymentFrequencySelect.value) {
-      case "monthly": return { freq: 12, label: "monthly" };
-      case "biweekly": return { freq: 26, label: "bi-weekly (accelerated)" };
-      case "biweekly-standard": return { freq: 26, label: "bi-weekly (standard)" };
-      case "weekly-accelerated": return { freq: 52, label: "weekly (accelerated)" };
-      case "weekly-standard": return { freq: 52, label: "weekly (standard)" };
-      default: return { freq: 12, label: "monthly" };
-    }
-  };
-
-  // Insurance Premium Table
-  const insurancePremiumTable = [
-    { maxLTV: 0.80, premium: 0.0 },
-    { maxLTV: 0.85, premium: 0.018 },
-    { maxLTV: 0.90, premium: 0.024 },
-    { maxLTV: 0.95, premium: 0.031 },
-  ];
-
-  const getInsuranceRate = (ltv) => {
-    for (let i = 0; i < insurancePremiumTable.length; i++) {
-      if (ltv <= insurancePremiumTable[i].maxLTV) {
-        return insurancePremiumTable[i].premium;
-      }
-    }
-    return null;
-  };
-
-  // Download CSV
-  const downloadReport = () => {
-    const data = [
-      ["Mortgage Size", mortgageSizeDisplay.innerText],
-      ["Down Payment", downPaymentDisplay.innerText],
-      ["Mortgage Payment", monthlyPaymentDisplay.innerText],
-      ["Mortgage Insurance Cost", insuranceCostDisplay.innerText],
-      ["Principal Paid (Payment Tab)", principalPaidDisplay.innerText],
-      ["Interest Paid (Payment Tab)", interestPaidDisplay.innerText],
-      ["Total Payment (Payment Tab)", totalPaymentDisplay.innerText],
-      ["Balance End of Term (Payment Tab)", balanceEndOfTermDisplay.innerText],
-      ["Effective Amortization (Payment Tab)", effectiveAmortizationDisplay.innerText],
-      ["Term Principal Paid", termPrincipalPaidDisplay.innerText],
-      ["Term Interest Paid", termInterestPaidDisplay.innerText],
-      ["Term Total Payment", termTotalPaymentDisplay.innerText],
-      ["Term Balance End of Term", termBalanceDisplay.innerText],
-      ["Term Effective Amortization", termAmortizationDisplay.innerText],
-      ["Total Principal Paid (Overall)", totalPrincipalPaidDisplay.innerText],
-      ["Total Interest Paid (Overall)", totalInterestPaidDisplay.innerText],
-      ["Total Payment (Overall)", totalPaymentOverallDisplay.innerText],
-      ["Total Balance End of Term (Overall)", totalBalanceDisplay.innerText],
-      ["Total Effective Amortization (Overall)", totalAmortizationDisplay.innerText],
-    ];
-
-    let csv = data.map((row) => row.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.style.display = "none";
-    link.download = "Mortgage_Report.csv";
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  // Email Results (placeholder)
-  const emailResults = () => {
-    alert("This can be integrated with your CRM/email logic to send results.");
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 3. SYNCHRONIZATION (Slider ↔ Input)
-  // ─────────────────────────────────────────────────────────────────────────────
-  const syncMortgageSizeInput = () => {
-    mortgageSizeSlider.value = mortgageSizeInput.value;
-  };
-  const syncMortgageSizeSlider = () => {
-    mortgageSizeInput.value = mortgageSizeSlider.value;
-  };
-
-  const syncDownPaymentInput = () => {
-    const sizeVal = parseFloat(mortgageSizeInput.value) || 0;
-    const dpVal = parseFloat(downPaymentInput.value) || 0;
-    if (sizeVal <= 0) {
-      downPaymentSlider.value = 0;
-      downPaymentPercentDisplay.textContent = "0%";
-      return;
-    }
-    const dpPercent = (dpVal / sizeVal) * 100;
-    // clamp
-    let usedPercent = dpPercent < 0 ? 0 : dpPercent;
-    usedPercent = usedPercent > 100 ? 100 : usedPercent;
-    downPaymentSlider.value = usedPercent.toFixed(2);
-    downPaymentPercentDisplay.textContent = `${usedPercent.toFixed(0)}%`;
-  };
-  const syncDownPaymentSlider = () => {
-    const sizeVal = parseFloat(mortgageSizeInput.value) || 0;
-    const sliderVal = parseFloat(downPaymentSlider.value) || 0;
-    const dp = (sliderVal / 100) * sizeVal;
-    downPaymentInput.value = dp.toFixed(0);
-    downPaymentPercentDisplay.textContent = `${sliderVal}%`;
-  };
-
-  const syncInterestRateInput = () => {
-    interestRateSlider.value = interestRateInput.value;
-  };
-  const syncInterestRateSlider = () => {
-    interestRateInput.value = interestRateSlider.value;
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 4. CORE CALCULATION FUNCTIONS
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  const zeroOutResults = () => {
-    monthlyPaymentDisplay.innerText = "$0.00";
-    insuranceCostDisplay.innerText = "$0.00";
-
-    // Payment tab
-    principalPaidDisplay.innerText = "$0.00";
-    interestPaidDisplay.innerText = "$0.00";
-    totalPaymentDisplay.innerText = "$0.00";
-    balanceEndOfTermDisplay.innerText = "$0.00";
-    effectiveAmortizationDisplay.innerText = "N/A";
-
-    // Term tab
-    termPrincipalPaidDisplay.innerText = "$0.00";
-    termInterestPaidDisplay.innerText = "$0.00";
-    termTotalPaymentDisplay.innerText = "$0.00";
-    termBalanceDisplay.innerText = "$0.00";
-    termAmortizationDisplay.innerText = "N/A";
-    termYearsDisplay.innerText = "N/A";
-
-    // Total tab
-    totalPrincipalPaidDisplay.innerText = "$0.00";
-    totalInterestPaidDisplay.innerText = "$0.00";
-    totalPaymentOverallDisplay.innerText = "$0.00";
-    totalBalanceDisplay.innerText = "$0.00";
-    totalAmortizationDisplay.innerText = "N/A";
-
-    principalProgress.style.width = "50%";
-    interestProgress.style.width = "50%";
-    termPrincipalProgress.style.width = "50%";
-    termInterestProgress.style.width = "50%";
-    totalPrincipalProgress.style.width = "50%";
-    totalInterestProgress.style.width = "50%";
-  };
-
-  const getEffectiveRate = (annualNominal, freq, isFixed) => {
-    const usedRate = isFixed ? annualNominal : annualNominal + 0.01;
-    const comp = parseInt(compoundingFrequencySelect.value, 10);
-    const rPerPeriod = usedRate / comp;
-    const eAR = Math.pow(1 + rPerPeriod, comp) - 1;
-    return eAR / freq;
-  };
-
-  const calculatePayment = (principal, ratePerPayment, totalPayments, loanType) => {
-    if (loanType === "interestOnly") {
-      return principal * ratePerPayment;
-    }
-    return (
-      (principal * ratePerPayment) /
-      (1 - Math.pow(1 + ratePerPayment, -totalPayments))
-    );
-  };
-
-  const calcNoInsurancePayment = (price, annualRate, freq, years, isFixed, loanType, extraPrepay) => {
-    const r = getEffectiveRate(annualRate, freq, isFixed);
-    const totalP = freq * years;
-    const basePmt = calculatePayment(price, r, totalP, loanType);
-    const prepayPerPayment = extraPrepay / (12 / freq);
-    return basePmt + prepayPerPayment;
-  };
-
-  const calcInsurancePayment = (
-    purchasePrice,
-    dp,
-    insurancePremium,
-    annualRate,
-    freq,
-    years,
-    isFixed,
-    loanType,
-    extraPrepay
-  ) => {
-    const principal = (purchasePrice - dp) + insurancePremium;
-    const r = getEffectiveRate(annualRate, freq, isFixed);
-    const totalP = freq * years;
-    const basePmt = calculatePayment(principal, r, totalP, loanType);
-    const prepayPerPayment = extraPrepay / (12 / freq);
-    return basePmt + prepayPerPayment;
-  };
-
-  function fillBreakdown({
-    principal,
-    monthlyPayment,
-    freq,
-    years,
-    rateTerm,
-    ratePerPayment,
-    loanType,
-  }) {
-    const totalP = freq * years;
-    const totalPaid = monthlyPayment * totalP;
-    const totalInterest = totalPaid - principal;
-
-    // Show Mortgage Size & DP with commas
-    mortgageSizeDisplay.innerText = formatIntegerCurrency(mortgageSizeInput.value);
-    downPaymentDisplay.innerText = formatIntegerCurrency(downPaymentInput.value);
-
-    const termY = rateTerm ? parseInt(rateTerm, 10) : 5;
-    const termP = termY * freq;
-
-    // Payment tab
-    principalPaidDisplay.innerText = formatCurrency(principal);
-    interestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentDisplay.innerText = formatCurrency(totalPaid);
-
-    let balanceAfterTerm = 0;
-    let termPrincipalPaid = 0;
-    let termInterestPaid = 0;
-
-    if (loanType === "interestOnly") {
-      balanceAfterTerm = principal;
-      termPrincipalPaid = 0;
-      termInterestPaid = monthlyPayment * termP;
-    } else {
-      balanceAfterTerm =
-        principal * Math.pow(1 + ratePerPayment, termP) -
-        monthlyPayment * ((Math.pow(1 + ratePerPayment, termP) - 1) / ratePerPayment);
-      termPrincipalPaid = principal - balanceAfterTerm;
-      termInterestPaid = monthlyPayment * termP - termPrincipalPaid;
-    }
-
-    balanceEndOfTermDisplay.innerText = formatCurrency(balanceAfterTerm);
-    effectiveAmortizationDisplay.innerText = `${years} years`;
-
-    // Term tab
-    termPrincipalPaidDisplay.innerText = formatCurrency(termPrincipalPaid);
-    termInterestPaidDisplay.innerText = formatCurrency(termInterestPaid);
-    termTotalPaymentDisplay.innerText = formatCurrency(monthlyPayment * termP);
-    termBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    termAmortizationDisplay.innerText = `${years} years`;
-    termYearsDisplay.innerText = termY;
-
-    // Total tab
-    totalPrincipalPaidDisplay.innerText = formatCurrency(principal);
-    totalInterestPaidDisplay.innerText = formatCurrency(totalInterest);
-    totalPaymentOverallDisplay.innerText = formatCurrency(totalPaid);
-    totalBalanceDisplay.innerText = formatCurrency(balanceAfterTerm);
-    totalAmortizationDisplay.innerText = `${years} years`;
-
-    // progress bars
-    const paySum = principal + totalInterest;
-    const payPrincipalRatio = principal / paySum;
-    const payInterestRatio = totalInterest / paySum;
-    updateProgressBar(payPrincipalRatio, payInterestRatio, principalProgress, interestProgress);
-
-    // Term bars
-    const termSum = termPrincipalPaid + termInterestPaid;
-    const termPrincipalRatio = termSum > 0 ? termPrincipalPaid / termSum : 0;
-    const termInterestRatio = termSum > 0 ? termInterestPaid / termSum : 0;
-    updateProgressBar(termPrincipalRatio, termInterestRatio, termPrincipalProgress, termInterestProgress);
-
-    // total bars
-    updateProgressBar(payPrincipalRatio, payInterestRatio, totalPrincipalProgress, totalInterestProgress);
-  }
-
-  // MAIN
-  const calculateMortgage = () => {
-    uninsurableComparison.classList.add("d-none");
-
-    const purchasePrice = parseFloat(mortgageSizeInput.value) || 0;
-    if (purchasePrice <= 0) {
-      zeroOutResults();
-      return;
-    }
-
-    const dpVal = parseFloat(downPaymentInput.value) || 0;
-    const { freq, label: freqLabel } = getPaymentFrequency();
-    const userRate = parseFloat(interestRateInput.value) || 0;
-    if (userRate <= 0) {
-      zeroOutResults();
-      return;
-    }
-
-    const annualNominalRate = userRate / 100;
-
-    // If you have fixed/variable:
-    let isFixedRate = true;
-    if (fixedRateButton && variableRateButton) {
-      isFixedRate = fixedRateButton.classList.contains("active");
-    }
-
-    const years = parseInt(amortizationRange.value, 10) || 25;
-    amortizationDisplay.innerText = `${years}`;
-
-    let rateTerm = 5;
-    if (rateTermSelect) {
-      rateTerm = rateTermSelect.value;
-    }
-
-    // Advanced
-    const propertyTax = parseFloat(propertyTaxInput.value) || 0;
-    const condoFees = parseFloat(condoFeesInput.value) || 0;
-    const extraPrepayment = parseFloat(extraPrepaymentInput.value) || 0;
-    const chosenLoanType = loanTypeSelect.value;
-
-    // Show/hide carrying costs
-    if (propertyTax > 0 || condoFees > 0) {
-      carryingCostSection.classList.remove("d-none");
-      propertyTaxMonthlyDisplay.innerText = formatCurrency(propertyTax / 12);
-      condoFeesMonthlyDisplay.innerText = formatCurrency(condoFees);
-    } else {
-      carryingCostSection.classList.add("d-none");
-    }
-
-    // Insurance checks
-    const mortgageLoan = purchasePrice - dpVal;
-    const ltv = mortgageLoan / purchasePrice;
-    let scenarioInsurable = true;
-    let insurancePremium = 0;
-
-    if (dpVal <= 0) scenarioInsurable = false;
-    if (dpVal >= 0.2 * purchasePrice) {
-      // no insurance needed
-    } else {
-      if (purchasePrice > 1000000) scenarioInsurable = false;
-      else if (dpVal < 0.05 * purchasePrice) scenarioInsurable = false;
-      else if (propertyType.value === "rental" && ltv > 0.80) scenarioInsurable = false;
-      else {
-        const rate = getInsuranceRate(ltv);
-        if (rate === null) scenarioInsurable = false;
-        else insurancePremium = mortgageLoan * rate;
-      }
-    }
-
-    // <5% => comparison
-    if (dpVal > 0 && dpVal < 0.05 * purchasePrice) {
-      const monthlyA = calcNoInsurancePayment(
-        purchasePrice,
-        annualNominalRate,
-        freq,
-        years,
-        isFixedRate,
-        chosenLoanType,
-        extraPrepayment
-      );
-      monthlyPaymentDisplay.innerText = formatCurrency(monthlyA) + ` / ${freqLabel}`;
-      insuranceCostDisplay.innerText = "N/A (Below 5%)";
-
-      fillBreakdown({
-        principal: purchasePrice,
-        monthlyPayment: monthlyA,
-        freq,
-        years,
-        rateTerm,
-        ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
-        loanType: chosenLoanType,
-      });
-
-      // forced 5%
-      const forcedDP = 0.05 * purchasePrice;
-      const forcedLoan = purchasePrice - forcedDP;
-      const forcedLTV = forcedLoan / purchasePrice;
-      const forcedRate = getInsuranceRate(forcedLTV);
-      if (!forcedRate || purchasePrice > 1000000 || propertyType.value === "rental") {
-        uninsurableMinDownPayment.innerText = "N/A (Even 5% is not insurable)";
-      } else {
-        const forcedPremium = forcedLoan * forcedRate;
-        const forcedMonthly = calcInsurancePayment(
-          purchasePrice,
-          forcedDP,
-          forcedPremium,
-          annualNominalRate,
-          freq,
-          years,
-          isFixedRate,
-          chosenLoanType,
-          extraPrepayment
-        );
-        uninsurableMinDownPayment.innerText = formatCurrency(forcedMonthly) + ` (${freqLabel})`;
-      }
-      uninsurableComparison.classList.remove("d-none");
-      uninsurableUserPayment.innerText = formatCurrency(monthlyA) + ` (${freqLabel})`;
-      return;
-    }
-
-    // If not insurable
-    if (!scenarioInsurable) {
-      const monthlyPmt = calcNoInsurancePayment(
-        purchasePrice,
-        annualNominalRate,
-        freq,
-        years,
-        isFixedRate,
-        chosenLoanType,
-        extraPrepayment
-      );
-      monthlyPaymentDisplay.innerText = formatCurrency(monthlyPmt) + ` / ${freqLabel}`;
-      insuranceCostDisplay.innerText = "N/A";
-      fillBreakdown({
-        principal: purchasePrice,
-        monthlyPayment: monthlyPmt,
-        freq,
-        years,
-        rateTerm,
-        ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
-        loanType: chosenLoanType,
-      });
-      return;
-    }
-
-    // Insurable
-    insuranceCostDisplay.innerText = formatCurrency(insurancePremium);
-    const insuredMonthly = calcInsurancePayment(
-      purchasePrice,
-      dpVal,
-      insurancePremium,
-      annualNominalRate,
-      freq,
-      years,
-      isFixedRate,
-      chosenLoanType,
-      extraPrepayment
-    );
-    monthlyPaymentDisplay.innerText = formatCurrency(insuredMonthly) + ` / ${freqLabel}`;
-
-    fillBreakdown({
-      principal: (purchasePrice - dpVal) + insurancePremium,
-      monthlyPayment: insuredMonthly,
-      freq,
-      years,
-      rateTerm,
-      ratePerPayment: getEffectiveRate(annualNominalRate, freq, isFixedRate),
-      loanType: chosenLoanType,
-    });
-  };
-
-  // Scenario B
-  const calculateScenarioB = () => {
-    scenarioBResult.classList.add("d-none");
-
-    const priceB = parseFloat(scenarioBMortgageAmount.value) || 0;
-    const dpB = parseFloat(scenarioBDownPayment.value) || 0;
-    const rateB = parseFloat(scenarioBInterestRate.value) || 0;
-    const yearsB = parseInt(scenarioBAmortization.value, 10) || 25;
-    const freqVal = scenarioBPaymentFrequency.value;
-
-    if (priceB <= 0 || rateB <= 0 || dpB < 0) {
-      return;
-    }
-
-    let scenarioInsurableB = true;
-    let insuranceB = 0;
-    if (dpB < 0.05 * priceB || priceB > 1000000) {
-      scenarioInsurableB = false;
-    }
-    const ltvB = (priceB - dpB) / priceB;
-    const possibleRate = getInsuranceRate(ltvB);
-    if (!possibleRate) scenarioInsurableB = false;
-
-    const freqData = (() => {
-      switch (freqVal) {
-        case "monthly": return { freq: 12, label: "monthly" };
-        case "biweekly": return { freq: 26, label: "bi-weekly (accelerated)" };
-        case "biweekly-standard": return { freq: 26, label: "bi-weekly (standard)" };
-        case "weekly-accelerated": return { freq: 52, label: "weekly (accelerated)" };
-        case "weekly-standard": return { freq: 52, label: "weekly (standard)" };
-        default: return { freq: 12, label: "monthly" };
-      }
-    })();
-
-    const annualNomB = rateB / 100;
-    const isFixedB = true; // Simplify
-    const chosenLoanTypeB = "regular";
-    const extraB = 0;
-
-    let monthlyB = 0;
-    if (!scenarioInsurableB) {
-      // no insurance
-      monthlyB = calcNoInsurancePayment(
-        priceB,
-        annualNomB,
-        freqData.freq,
-        yearsB,
-        isFixedB,
-        chosenLoanTypeB,
-        extraB
-      );
-      scenarioBInsurance.innerText = "N/A";
-    } else {
-      insuranceB = (priceB - dpB) * possibleRate;
-      const monthlyI = calcInsurancePayment(
-        priceB,
-        dpB,
-        insuranceB,
-        annualNomB,
-        freqData.freq,
-        yearsB,
-        isFixedB,
-        chosenLoanTypeB,
-        extraB
-      );
-      monthlyB = monthlyI;
-      scenarioBInsurance.innerText = formatCurrency(insuranceB);
-    }
-
-    const totalP = freqData.freq * yearsB;
-    const totalPaid = monthlyB * totalP;
-    const principalB = scenarioInsurableB
-      ? (priceB - dpB) + insuranceB
-      : priceB;
-    const interestOverTerm = totalPaid - principalB;
-
-    scenarioBPayment.innerText = formatCurrency(monthlyB);
-    scenarioBInterestPaid.innerText = formatCurrency(interestOverTerm);
-
-    scenarioBResult.classList.remove("d-none");
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 5. EVENT LISTENERS
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  // Mortgage Size
-  mortgageSizeInput.addEventListener("input", () => {
-    syncMortgageSizeInput();
-    syncDownPaymentInput();
-    calculateMortgage();
-  });
-  mortgageSizeSlider.addEventListener("input", () => {
-    syncMortgageSizeSlider();
-    syncDownPaymentInput();
-    calculateMortgage();
-  });
-
-  // Down Payment
-  downPaymentInput.addEventListener("input", () => {
-    syncDownPaymentInput();
-    calculateMortgage();
-  });
-  downPaymentSlider.addEventListener("input", () => {
-    syncDownPaymentSlider();
-    calculateMortgage();
-  });
-
-  // Interest Rate
-  interestRateInput.addEventListener("input", () => {
-    syncInterestRateInput();
-    calculateMortgage();
-  });
-  interestRateSlider.addEventListener("input", () => {
-    syncInterestRateSlider();
-    calculateMortgage();
-  });
-
-  // Payment Frequency
-  paymentFrequencySelect.addEventListener("change", calculateMortgage);
-  advancedFrequencySelect.addEventListener("change", calculateMortgage);
-
-  // Amortization
-  amortizationRange.addEventListener("input", calculateMortgage);
+  // ------------------------------------------------------------------
+  // 1. ELEMENT REFERENCES (With optional checks)
+  // ------------------------------------------------------------------
+  function $(id) { return document.getElementById(id); }
+
+  const mortgageSizeInput        = $("mortgageSize");
+  const mortgageSizeSlider       = $("mortgageSizeSlider");
+  const mortgageSizeSliderValue  = $("mortgageSizeSliderValue");
+
+  const downPaymentInput         = $("downPaymentInput");
+  const downPaymentSlider        = $("downPaymentSlider");
+  const downPaymentPercentDisplay= $("downPaymentPercentDisplay");
+  const downPaymentSliderValue   = $("downPaymentSliderValue");
+
+  const propertyType             = $("propertyType");
+  const paymentFrequencySelect   = $("paymentFrequency");
+  const fixedRateBtn             = $("fixedRateBtn");
+  const variableRateBtn          = $("variableRateBtn");
+  const interestRateInput        = $("interestRateInput");
+  const interestRateSlider       = $("interestRateSlider");
+  const interestRateSliderValue  = $("interestRateSliderValue");
+  
+  const mortgageTermSelect       = $("mortgageTermSelect");
+  const amortizationRange        = $("amortization");
+  const amortizationDisplay      = $("amortizationDisplay");
+
+  // Home Expenses
+  const propertyTax              = $("propertyTax");
+  const propertyTaxMonthly       = $("propertyTaxMonthly");
+  const condoFeesSlider          = $("condoFeesSlider");
+  const condoFees                = $("condoFees");
+  const heatSlider               = $("heatSlider");
+  const heat                     = $("heat");
+  const otherExpensesSlider      = $("otherExpensesSlider");
+  const otherExpenses            = $("otherExpenses");
+
+  // Rental
+  const rentalIncomeToggle       = $("rentalIncomeToggle");
+  const rentalIncomeSection      = $("rentalIncomeSection");
+  const rentalIncomeYearly       = $("rentalIncomeYearly");
+  const rentalIncomeMonthly      = $("rentalIncomeMonthly");
+
+  // Faster
+  const fasterFrequencySlider    = $("fasterFrequencySlider");
+  const fasterFrequencyValue     = $("fasterFrequencyValue");
+  const fasterFrequencyDropdown  = $("fasterFrequencyDropdown");
+  const oneTimePaymentSlider     = $("oneTimePaymentSlider");
+  const oneTimePayment           = $("oneTimePayment");
+  const annualPrepaymentSlider   = $("annualPrepaymentSlider");
+  const annualPrepayment         = $("annualPrepayment");
+  const includesExtraLine        = $("includesExtraLine");
 
   // Advanced
-  propertyTaxInput.addEventListener("input", calculateMortgage);
-  condoFeesInput.addEventListener("input", calculateMortgage);
-  extraPrepaymentInput.addEventListener("input", calculateMortgage);
-  loanTypeSelect.addEventListener("change", calculateMortgage);
-  compoundingFrequencySelect.addEventListener("change", calculateMortgage);
+  const loanType                 = $("loanType");
+  const compoundingFrequency     = $("compoundingFrequency");
 
-  // If you have fixed/variable buttons
-  if (fixedRateButton && variableRateButton) {
-    fixedRateButton.addEventListener("click", () => {
-      fixedRateButton.classList.add("active");
-      variableRateButton.classList.remove("active");
-      calculateMortgage();
-    });
-    variableRateButton.addEventListener("click", () => {
-      variableRateButton.classList.add("active");
-      fixedRateButton.classList.remove("active");
-      calculateMortgage();
-    });
-  }
+  // Right column
+  const totalMonthlyCost         = $("totalMonthlyCost");
+  const extraPaymentPercent      = $("extraPaymentPercent");
+  const monthlyMortgageItem      = $("monthlyMortgageItem");
+  const homeExpensesItem         = $("homeExpensesItem");
+  const otherExpensesItem        = $("otherExpensesItem");
+  const rentalIncomeItem         = $("rentalIncomeItem");
 
-  // If you have a rateTermSelect
-  if (rateTermSelect) {
-    rateTermSelect.addEventListener("change", calculateMortgage);
-  }
+  const mortgageSizeDisplay      = $("mortgageSizeDisplay");
+  const downPaymentDisplay       = $("downPaymentDisplay");
+  const insuranceCostDisplay2    = $("insuranceCostDisplay2");
+  const mortgagePaymentDetails   = $("mortgagePaymentDetails");
+  const netMortgageInsurance     = $("netMortgageInsurance");
+  const interestOverTerm         = $("interestOverTerm");
+  const interestSavingLabel      = $("interestSavingLabel");
+  const balanceEndOfTerm         = $("balanceEndOfTerm");
+  const effectiveAmortization    = $("effectiveAmortization");
+  const fasterAmortLabel         = $("fasterAmortLabel");
 
-  // Config Panel Slide-in
-  configButton.addEventListener("click", () => {
-    configPanel.classList.remove("d-none");
-    configPanel.style.transform = "translateX(0)";
-  });
-  closeConfig.addEventListener("click", () => {
-    configPanel.style.transform = "translateX(100%)";
-  });
-
-  // Download
-  downloadReportButton.addEventListener("click", downloadReport);
-
-  // Email
-  emailResultsButton.addEventListener("click", emailResults);
+  const uninsurableComparison    = $("uninsurableComparison");
+  const uninsurableUserPayment   = $("uninsurableUserPayment");
+  const uninsurableMinDownPayment= $("uninsurableMinDownPayment");
 
   // Scenario B
-  calculateScenarioBButton.addEventListener("click", calculateScenarioB);
+  const scenarioBMortgageAmount  = $("scenarioBMortgageAmount");
+  const scenarioBDownPayment     = $("scenarioBDownPayment");
+  const scenarioBInterestRate    = $("scenarioBInterestRate");
+  const scenarioBAmortization    = $("scenarioBAmortization");
+  const scenarioBPaymentFrequency= $("scenarioBPaymentFrequency");
+  const scenarioBResult          = $("scenarioBResult");
+  const scenarioBPayment         = $("scenarioBPayment");
+  const scenarioBInterestPaid    = $("scenarioBInterestPaid");
+  const scenarioBInsurance       = $("scenarioBInsurance");
+  const calculateScenarioBButton = $("calculateScenarioB");
 
-  // Initial load
-  syncMortgageSizeInput();
-  syncDownPaymentInput();
-  syncInterestRateInput();
+  // CTA Buttons
+  const downloadReportButton     = $("downloadReport");
+  const applyNowBtn              = $("applyNowBtn");
+
+  // ------------------------------------------------------------------
+  // 2. UTILITY FUNCTIONS
+  // ------------------------------------------------------------------
+
+  function parseCurrency(str) {
+    return parseFloat(str.replace(/,/g, "")) || 0;
+  }
+  function formatInt(num) {
+    if (isNaN(num)) return "0";
+    return num.toLocaleString(undefined);
+  }
+  function formatCurrency(num) {
+    if (isNaN(num)) return "$0.00";
+    return `$${num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  }
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(val, max));
+  }
+  function formatIntCurrency(num) {
+    if (isNaN(num)) return "$0";
+    return "$" + parseInt(num, 10).toLocaleString(undefined);
+  }
+
+  // Convert nominal rate + compounding freq => annual effective
+  function getEffectiveRate(nominal, compFreq) {
+    if (!compFreq) compFreq="2"; // default
+    switch(compFreq){
+      case "12": { // monthly
+        return Math.pow(1+ nominal/12, 12)-1;
+      }
+      case "26": { // bi-weekly
+        return Math.pow(1+ nominal/26, 26)-1;
+      }
+      case "52": { // weekly
+        return Math.pow(1+ nominal/52, 52)-1;
+      }
+      case "365": { // daily
+        return Math.pow(1+ nominal/365, 365)-1;
+      }
+      default: { 
+        // 2 => semi-ann
+        return Math.pow(1+ nominal/2, 2)-1;
+      }
+    }
+  }
+  // From annual effective => periodic => freq times per year
+  function getPeriodicRate(nominal, freq, compFreq) {
+    let annualEff= getEffectiveRate(nominal, compFreq);
+    return Math.pow(1+ annualEff, 1/freq)-1;
+  }
+
+  // Standard mortgage pmt formula
+  function calcPmt(principal, perRate, totalN) {
+    if (perRate<=0) return principal/ totalN;
+    return principal* (perRate* Math.pow(1+ perRate, totalN)) / (Math.pow(1+ perRate, totalN)-1);
+  }
+
+  function getInsuranceRate(ltv){
+    if(ltv<=0.80) return 0;
+    if(ltv<=0.85) return 0.018;
+    if(ltv<=0.90) return 0.024;
+    if(ltv<=0.95) return 0.031;
+    return null; // not insurable above 95%
+  }
+
+  // "One-time" lumpsum on iteration=0, annual lumpsum each 'year' 
+  function doAmort(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, totalN, isIO) {
+    let bal= principal;
+    let totInt=0, totPrin=0;
+
+    // lumpsum once at iteration=0
+    if(lumpsumOnce>0 && bal>0){
+      const used= Math.min(bal, lumpsumOnce);
+      bal-= used;
+      totPrin+= used;
+      if(bal<0) bal=0;
+    }
+
+    // if not interest-only => basePayment
+    let basePayment= calcPmt(principal, perRate, totalN);
+
+    let yearlyCount=0;
+    for(let i=0; i< totalN; i++){
+      if(bal<=0) break;
+
+      let interestPortion= bal* perRate;
+      totInt+= interestPortion;
+
+      let princPortion=0;
+      if(!isIO){
+        // extraFraction => fraction of basePayment
+        // so final payment => basePayment + (basePayment* extraFraction)
+        let fullPmt= basePayment+ (basePayment* extraFraction);
+        princPortion= fullPmt- interestPortion;
+      } else {
+        // interestOnly => base= interest portion => plus "extra fraction" of that?
+        let iOnly= interestPortion;
+        let full= iOnly+ (iOnly* extraFraction); 
+        princPortion= full- interestPortion; 
+      }
+      if(princPortion<0) princPortion=0;
+
+      bal-= princPortion;
+      totPrin+= princPortion;
+      if(bal<0) bal=0;
+
+      yearlyCount++;
+      if(yearlyCount=== freq){
+        yearlyCount=0;
+        if(lumpsumAnnual>0 && bal>0){
+          let lum= Math.min(bal, lumpsumAnnual);
+          bal-= lum;
+          totPrin+= lum;
+          if(bal<0) bal=0;
+        }
+      }
+    }
+    return { finalBalance: bal, totalInterest: totInt, totalPrincipal: totPrin };
+  }
+
+  // partialTerm => for the user-chosen Term
+  function doPartialAmort(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, partialN, isIO){
+    let bal= principal;
+    let totInt=0;
+
+    // lumpsum once
+    if(lumpsumOnce>0 && bal>0){
+      let used= Math.min(bal, lumpsumOnce);
+      bal-= used;
+      if(bal<0) bal=0;
+    }
+
+    // base payment for non-IO
+    // we approximate with total= freq*(some big #)
+    let basePayment= calcPmt(principal, perRate, freq*30);
+
+    let yearlyCount=0;
+    for(let i=0; i< partialN; i++){
+      if(bal<=0) break;
+      let interestPortion= bal* perRate;
+      totInt+= interestPortion;
+      let princPortion=0;
+      if(!isIO){
+        let full= basePayment+ (basePayment* extraFraction);
+        princPortion= full- interestPortion;
+      } else {
+        let iOnly= interestPortion;
+        let full= iOnly+ (iOnly* extraFraction);
+        princPortion= full- interestPortion;
+      }
+      if(princPortion<0) princPortion=0;
+
+      bal-= princPortion;
+      if(bal<0) bal=0;
+
+      yearlyCount++;
+      if(yearlyCount=== freq){
+        yearlyCount=0;
+        if(lumpsumAnnual>0 && bal>0){
+          let lum= Math.min(bal, lumpsumAnnual);
+          bal-= lum;
+          if(bal<0) bal=0;
+        }
+      }
+    }
+    return { finalBalance: bal, totalInterest: totInt };
+  }
+
+  // find # payments for full payoff
+  function findPayoffN(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, isIO){
+    let bal= principal;
+    let count=0;
+
+    // lumpsum once at iteration=0
+    if(lumpsumOnce>0 && bal>0){
+      let used= Math.min(bal, lumpsumOnce);
+      bal-= used;
+      if(bal<0) bal=0;
+    }
+
+    let basePayment= calcPmt(principal, perRate, freq*30);
+
+    let yearlyCount=0;
+    while(bal>0 && count< 99999){
+      let interest= bal* perRate;
+      let princ=0;
+      if(!isIO){
+        let full= basePayment+ (basePayment* extraFraction);
+        princ= full- interest;
+      } else {
+        let iOnly= interest;
+        let full= iOnly+ (iOnly* extraFraction);
+        princ= full- interest;
+      }
+      if(princ<0) princ=0;
+
+      bal-= princ;
+      if(bal<0) bal=0;
+
+      count++;
+      yearlyCount++;
+      if(yearlyCount=== freq){
+        yearlyCount=0;
+        if(lumpsumAnnual>0 && bal>0){
+          let lum= Math.min(bal, lumpsumAnnual);
+          bal-= lum;
+          if(bal<0) bal=0;
+        }
+      }
+    }
+    return count;
+  }
+
+  function calculateMortgage(){
+    if(!mortgageSizeInput || !downPaymentInput) return; // if minimal
+
+    uninsurableComparison?.classList.add("d-none");
+
+    // show/hide "Includes x% of extra"
+    let xPct= parseInt(fasterFrequencyDropdown?.value||"0",10);
+    if(xPct>0 && includesExtraLine){
+      includesExtraLine.style.display= "block";
+      extraPaymentPercent.textContent= xPct+"%";
+    } else if(includesExtraLine) {
+      includesExtraLine.style.display= "none";
+      extraPaymentPercent.textContent= "0%";
+    }
+
+    // inputs
+    const purchaseVal= parseCurrency(mortgageSizeInput.value);
+    const dpVal= parseCurrency(downPaymentInput.value);
+    let nominalRate= parseFloat(interestRateInput.value)/100 ||0;
+    if(variableRateBtn && variableRateBtn.checked){
+      nominalRate+= 0.01; // e.g. +1% for variable
+    }
+
+    let baseFreq=12;
+    if(paymentFrequencySelect){
+      switch(paymentFrequencySelect.value){
+        case "weekly-standard": baseFreq=52; break;
+        case "daily": baseFreq=365; break;
+        case "semiannual": baseFreq=2; break;
+        default: baseFreq=12; break;
+      }
+    }
+
+    let freqSliderVal= parseInt(fasterFrequencySlider?.value||"0",10);
+    if(freqSliderVal<1) freqSliderVal= baseFreq;
+    if(fasterFrequencyValue) {
+      fasterFrequencyValue.textContent= freqSliderVal.toString();
+    }
+
+    let compFreqVal= compoundingFrequency?.value||"2"; // default semi-ann
+    let perRate= getPeriodicRate(nominalRate, freqSliderVal, compFreqVal);
+
+    let years= parseInt(amortizationRange.value,10)||25; 
+    years= clamp(years,5,30);
+    if(amortizationDisplay) amortizationDisplay.textContent= years.toString();
+
+    // insurance if dp<20%
+    let insurance=0;
+    const loan= purchaseVal- dpVal;
+    if(dpVal< 0.2* purchaseVal && purchaseVal<=1500000 && loan>0){
+      let ltv= loan/ purchaseVal;
+      let iRate= getInsuranceRate(ltv);
+      if(iRate!== null) insurance= iRate* loan;
+    }
+    const financed= loan+ insurance;
+
+    // lumpsums
+    let oneT= parseFloat(oneTimePayment.value)||0;
+    let annT= parseFloat(annualPrepayment.value)||0;
+
+    // interest only?
+    let isIO= (loanType && loanType.value==="interestOnly");
+
+    // extra fraction => xPct => 0.05 => etc
+    let extraFrac= xPct/100;
+
+    // full # of payments
+    const totalN= freqSliderVal* years;
+
+    // main result
+    let mainRes= doAmort(
+      financed,
+      perRate,
+      freqSliderVal,
+      annT,
+      oneT,
+      extraFrac,
+      totalN,
+      isIO
+    );
+    let finalBal= mainRes.finalBalance;
+    let totalInt= mainRes.totalInterest;
+
+    // partial => user-chosen term
+    let chosenTerm= parseInt(mortgageTermSelect?.value||"5",10)||5;
+    let partialN= freqSliderVal* chosenTerm;
+    let partialRes= doPartialAmort(
+      financed,
+      perRate,
+      freqSliderVal,
+      annT,
+      oneT,
+      extraFrac,
+      partialN,
+      isIO
+    );
+
+    // display
+    if(mortgageSizeDisplay) mortgageSizeDisplay.textContent= formatIntCurrency(purchaseVal);
+    if(downPaymentDisplay) downPaymentDisplay.textContent= formatIntCurrency(dpVal);
+    if(insuranceCostDisplay2) insuranceCostDisplay2.textContent= formatCurrency(insurance);
+
+    // freq label
+    let freqLabel="";
+    switch(paymentFrequencySelect?.value){
+      case "weekly-standard": freqLabel="/weekly"; break;
+      case "daily": freqLabel="/daily"; break;
+      case "semiannual": freqLabel="/semi-annually"; break;
+      default: freqLabel="/monthly"; break;
+    }
+
+    // compute basePayment just for display
+    let basePay=0;
+    if(!isIO){
+      // base + extra => do one period
+      basePay= calcPmt(financed, perRate, totalN);
+      basePay= basePay+ (basePay* extraFrac);
+    } else {
+      let iOnly= financed* perRate;
+      basePay= iOnly+ (iOnly* extraFrac);
+    }
+    if(totalMonthlyCost){
+      totalMonthlyCost.textContent= formatCurrency(basePay)+ freqLabel;
+    }
+    if(monthlyMortgageItem){
+      monthlyMortgageItem.textContent= formatCurrency(basePay);
+    }
+    if(mortgagePaymentDetails){
+      mortgagePaymentDetails.textContent= formatCurrency(basePay)+ freqLabel;
+    }
+    if(netMortgageInsurance){
+      netMortgageInsurance.textContent= formatCurrency(financed);
+    }
+
+    // partial => interestOverTerm + balance
+    if(interestOverTerm){
+      interestOverTerm.textContent= formatCurrency(partialRes.totalInterest);
+    }
+    if(balanceEndOfTerm){
+      balanceEndOfTerm.textContent= formatCurrency(partialRes.finalBalance);
+    }
+
+    // interest saving => do baseline no lumpsum/ no extra
+    let baseline= doAmort(financed, perRate, freqSliderVal, 0,0,0, totalN, isIO);
+    let saving= baseline.totalInterest- totalInt;
+    if(saving>0 && interestSavingLabel){
+      interestSavingLabel.textContent= `(INTEREST SAVING ${formatCurrency(saving)})`;
+    } else if(interestSavingLabel){
+      interestSavingLabel.textContent= `(INTEREST SAVING $0)`;
+    }
+
+    // effective amort
+    let payoffCount= findPayoffN(financed, perRate, freqSliderVal, annT, oneT, extraFrac, isIO);
+    let effYears= Math.floor(payoffCount/ freqSliderVal);
+    let effRem= (payoffCount/ freqSliderVal)- effYears;
+    let effMo= Math.round(effRem*12);
+    if(effectiveAmortization){
+      effectiveAmortization.textContent= `${effYears} yr ${effMo} mo`;
+    }
+    if(effYears< years && fasterAmortLabel){
+      let diff= years- effYears;
+      fasterAmortLabel.textContent= `(${diff} years faster)`;
+    } else if(fasterAmortLabel){
+      fasterAmortLabel.textContent= `(0 years faster)`;
+    }
+
+    // home expenses
+    let annTax= parseFloat(propertyTax?.value||"0");
+    let moTax= parseFloat(propertyTaxMonthly?.value||"0");
+    if(annTax>0) moTax= annTax/12;
+    else if(moTax>0) annTax= moTax*12;
+    if(propertyTax) propertyTax.value= annTax.toFixed(2);
+    if(propertyTaxMonthly) propertyTaxMonthly.value= moTax.toFixed(2);
+
+    let cFee= parseFloat(condoFees?.value||"0");
+    let hFee= parseFloat(heat?.value||"0");
+    let oFee= parseFloat(otherExpenses?.value||"0");
+
+    let rent=0;
+    if(rentalIncomeToggle && rentalIncomeToggle.checked){
+      let yRent= parseFloat(rentalIncomeYearly?.value||"0");
+      let mRent= parseFloat(rentalIncomeMonthly?.value||"0");
+      rent= (yRent>0)? (yRent/12): mRent;
+    }
+    let moHome= moTax+ cFee+ hFee;
+    let moTotal= basePay+ moHome+ oFee- rent;
+    if(homeExpensesItem) homeExpensesItem.textContent= formatCurrency(moHome);
+    if(otherExpensesItem) otherExpensesItem.textContent= formatCurrency(oFee);
+    if(rentalIncomeItem) rentalIncomeItem.textContent= (rent>0)? `- ${formatCurrency(rent)}`:"$0.00";
+
+    if(moTotal<0 && totalMonthlyCost){
+      totalMonthlyCost.textContent= "$0.00";
+    } else if(totalMonthlyCost){
+      totalMonthlyCost.textContent= formatCurrency(moTotal)+ freqLabel;
+    }
+
+    // <5% => show comparison
+    if(dpVal>0 && dpVal< 0.05* purchaseVal && uninsurableComparison){
+      uninsurableComparison.classList.remove("d-none");
+      if(uninsurableUserPayment) uninsurableUserPayment.textContent= formatCurrency(basePay);
+      if(uninsurableMinDownPayment) uninsurableMinDownPayment.textContent= formatCurrency(basePay*0.98);
+    } else if(uninsurableComparison){
+      uninsurableComparison.classList.add("d-none");
+    }
+
+    // reformat left side
+    if(mortgageSizeInput) mortgageSizeInput.value= formatInt(purchaseVal);
+    if(downPaymentInput)  downPaymentInput.value= formatInt(dpVal);
+  }
+
+  function calculateScenarioB(){
+    if(!scenarioBResult) return;
+    scenarioBResult.classList.remove("d-none");
+    if(scenarioBPayment) scenarioBPayment.textContent= "$1,234.56";
+    if(scenarioBInterestPaid) scenarioBInterestPaid.textContent= "$11,000.00";
+    if(scenarioBInsurance) scenarioBInsurance.textContent= "$0.00";
+  }
+
+  // ------------------------------------------------------------------
+  // 3. EVENT LISTENERS (Check for element existence)
+  // ------------------------------------------------------------------
+
+  if(mortgageSizeInput) {
+    mortgageSizeInput.addEventListener("input", e=>{
+      let raw= e.target.value.replace(/,/g,"");
+      let num= parseInt(raw)||0;
+      e.target.value= formatInt(num);
+      if(mortgageSizeSlider){
+        mortgageSizeSlider.value= num;
+        if(mortgageSizeSliderValue){
+          mortgageSizeSliderValue.textContent= "$"+ formatInt(num);
+        }
+      }
+      calculateMortgage();
+    });
+  }
+  if(mortgageSizeSlider) {
+    mortgageSizeSlider.addEventListener("input", e=>{
+      let val= parseInt(e.target.value,10);
+      if(mortgageSizeInput) mortgageSizeInput.value= formatInt(val);
+      if(mortgageSizeSliderValue) mortgageSizeSliderValue.textContent= "$"+ formatInt(val);
+      calculateMortgage();
+    });
+  }
+
+  if(downPaymentInput) {
+    downPaymentInput.addEventListener("input", e=>{
+      let raw= e.target.value.replace(/,/g,"");
+      let num= parseInt(raw)||0;
+      e.target.value= formatInt(num);
+      let mort= parseInt(mortgageSizeSlider?.value||"0",10);
+      let pct= (num/mort)*100; pct= clamp(pct,0,100);
+      if(downPaymentSlider){
+        downPaymentSlider.value= pct.toFixed(0);
+      }
+      if(downPaymentSliderValue){
+        downPaymentSliderValue.textContent= "$"+ formatInt(num);
+      }
+      calculateMortgage();
+    });
+  }
+  if(downPaymentSlider) {
+    downPaymentSlider.addEventListener("input", e=>{
+      let mort= parseInt(mortgageSizeSlider?.value||"0",10)||0;
+      let sVal= parseInt(e.target.value,10)||0;
+      let dp= Math.round((sVal/100)* mort);
+      if(downPaymentInput) downPaymentInput.value= formatInt(dp);
+      if(downPaymentSliderValue) downPaymentSliderValue.textContent= "$"+ formatInt(dp);
+      if(downPaymentPercentDisplay) downPaymentPercentDisplay.textContent= sVal+"%";
+      calculateMortgage();
+    });
+  }
+
+  if(paymentFrequencySelect){
+    paymentFrequencySelect.addEventListener("change", calculateMortgage);
+  }
+  if(fixedRateBtn) fixedRateBtn.addEventListener("change", calculateMortgage);
+  if(variableRateBtn) variableRateBtn.addEventListener("change", calculateMortgage);
+
+  if(interestRateInput){
+    interestRateInput.addEventListener("input", e=>{
+      let raw= e.target.value.replace(/,/g,"");
+      let val= parseFloat(raw)||0;
+      if(val<0) val=0; if(val>10) val=10;
+      e.target.value= val.toFixed(2);
+      if(interestRateSlider){
+        interestRateSlider.value= val.toString();
+      }
+      if(interestRateSliderValue){
+        interestRateSliderValue.textContent= val.toFixed(2)+"%";
+      }
+      calculateMortgage();
+    });
+  }
+  if(interestRateSlider){
+    interestRateSlider.addEventListener("input", e=>{
+      let v= parseFloat(e.target.value)||0;
+      if(v<0) v=0; if(v>10) v=10;
+      if(interestRateInput) interestRateInput.value= v.toFixed(2);
+      if(interestRateSliderValue) interestRateSliderValue.textContent= v.toFixed(2)+"%";
+      calculateMortgage();
+    });
+  }
+
+  if(mortgageTermSelect){
+    mortgageTermSelect.addEventListener("change", calculateMortgage);
+  }
+  if(amortizationRange){
+    amortizationRange.addEventListener("input", e=>{
+      if(amortizationDisplay) amortizationDisplay.textContent= e.target.value;
+      calculateMortgage();
+    });
+  }
+
+  if(propertyTax) propertyTax.addEventListener("input", calculateMortgage);
+  if(propertyTaxMonthly) propertyTaxMonthly.addEventListener("input", calculateMortgage);
+
+  if(condoFeesSlider){
+    condoFeesSlider.addEventListener("input", e=>{
+      if(condoFees) condoFees.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(condoFees){
+    condoFees.addEventListener("input", e=>{
+      if(condoFeesSlider) condoFeesSlider.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+
+  if(heatSlider){
+    heatSlider.addEventListener("input", e=>{
+      if(heat) heat.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(heat){
+    heat.addEventListener("input", e=>{
+      if(heatSlider) heatSlider.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+
+  if(otherExpensesSlider){
+    otherExpensesSlider.addEventListener("input", e=>{
+      if(otherExpenses) otherExpenses.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(otherExpenses){
+    otherExpenses.addEventListener("input", e=>{
+      if(otherExpensesSlider) otherExpensesSlider.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+
+  if(rentalIncomeToggle){
+    rentalIncomeToggle.addEventListener("change", e=>{
+      if(e.target.checked){
+        rentalIncomeSection?.classList.remove("d-none");
+      } else {
+        rentalIncomeSection?.classList.add("d-none");
+        if(rentalIncomeYearly) rentalIncomeYearly.value="";
+        if(rentalIncomeMonthly) rentalIncomeMonthly.value="";
+      }
+      calculateMortgage();
+    });
+  }
+  if(rentalIncomeYearly) rentalIncomeYearly.addEventListener("input", calculateMortgage);
+  if(rentalIncomeMonthly) rentalIncomeMonthly.addEventListener("input", calculateMortgage);
+
+  if(fasterFrequencySlider){
+    fasterFrequencySlider.addEventListener("input", e=>{
+      if(fasterFrequencyValue) fasterFrequencyValue.textContent= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(fasterFrequencyDropdown){
+    fasterFrequencyDropdown.addEventListener("change", calculateMortgage);
+  }
+
+  if(oneTimePaymentSlider){
+    oneTimePaymentSlider.addEventListener("input", e=>{
+      if(oneTimePayment) oneTimePayment.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(oneTimePayment){
+    oneTimePayment.addEventListener("input", e=>{
+      if(oneTimePaymentSlider) oneTimePaymentSlider.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(annualPrepaymentSlider){
+    annualPrepaymentSlider.addEventListener("input", e=>{
+      if(annualPrepayment) annualPrepayment.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+  if(annualPrepayment){
+    annualPrepayment.addEventListener("input", e=>{
+      if(annualPrepaymentSlider) annualPrepaymentSlider.value= e.target.value;
+      calculateMortgage();
+    });
+  }
+
+  if(loanType) loanType.addEventListener("change", calculateMortgage);
+  if(compoundingFrequency) compoundingFrequency.addEventListener("change", calculateMortgage);
+
+  if(downloadReportButton){
+    downloadReportButton.addEventListener("click", ()=>{
+      alert("Download logic here...");
+    });
+  }
+  if(applyNowBtn){
+    applyNowBtn.addEventListener("click", ()=>{
+      alert("Apply Now logic here...");
+    });
+  }
+
+  if(calculateScenarioBButton){
+    calculateScenarioBButton.addEventListener("click", calculateScenarioB);
+  }
+
+  // init
+  function initSync(){
+    if(mortgageSizeSlider) mortgageSizeSlider.value= "500000";
+    if(downPaymentSlider) downPaymentSlider.value= "20";
+    if(interestRateSlider) interestRateSlider.value= "4.24";
+    if(interestRateInput) interestRateInput.value= "4.24";
+    if(fasterFrequencySlider) fasterFrequencySlider.value= "0";
+    if(fasterFrequencyValue) fasterFrequencyValue.textContent= "0";
+    if(fasterFrequencyDropdown) fasterFrequencyDropdown.value= "0";
+    if(oneTimePayment) oneTimePayment.value= "0";
+    if(oneTimePaymentSlider) oneTimePaymentSlider.value= "0";
+    if(annualPrepayment) annualPrepayment.value= "0";
+    if(annualPrepaymentSlider) annualPrepaymentSlider.value= "0";
+    if(mortgageTermSelect) mortgageTermSelect.value= "5";
+    if(amortizationRange) amortizationRange.value= "25";
+    if(amortizationDisplay) amortizationDisplay.textContent= "25";
+    if(includesExtraLine) includesExtraLine.style.display= "none";
+  }
+  initSync();
   calculateMortgage();
 });
