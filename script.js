@@ -756,21 +756,41 @@ document.addEventListener("DOMContentLoaded", () => {
   calculateMortgage();
 });
 
+let lastSentHeight = 0; // Cache the last height sent to the parent
+const debounceDelay = 200; // Delay in milliseconds
+
 function sendHeightToParent() {
-  const height = document.documentElement.scrollHeight; // Get total height of the child page
-  window.parent.postMessage({ height }, "https://thegenesisgroup.ca"); // Only send to the parent domain
+    const newHeight = document.documentElement.scrollHeight;
+    
+    // Only send if the height has changed significantly
+    if (Math.abs(newHeight - lastSentHeight) > 5) {
+        lastSentHeight = newHeight;
+        window.parent.postMessage({ height: newHeight }, "https://thegenesisgroup.ca");
+    }
 }
 
-// Send the height on load and on resize
-document.addEventListener("DOMContentLoaded", sendHeightToParent);
-window.addEventListener("resize", sendHeightToParent);
+// Debounce height updates
+const debounce = (fn, delay) => {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+};
 
-// Listen for a specific "requestHeight" message from the parent
+const debouncedSendHeight = debounce(sendHeightToParent, debounceDelay);
+
+// Send height on load and on resize, using debouncing
+document.addEventListener("DOMContentLoaded", sendHeightToParent);
+window.addEventListener("resize", debouncedSendHeight);
+
+// Listen for explicit height requests from the parent
 window.addEventListener("message", (event) => {
-  if (event.data && event.data.requestHeight) {
-      sendHeightToParent();
-  }
+    if (event.data && event.data.requestHeight) {
+        sendHeightToParent();
+    }
 });
+
 
 
 
