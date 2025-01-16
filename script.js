@@ -758,7 +758,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function sendHeightToParent() {
   const height = document.body.scrollHeight;
-  window.parent.postMessage({ height: height }, "*");
+  window.parent.postMessage({ height: height }, "https://grbryan21.github.io/CanadianMortgageCalculator/");
 }
 
 window.addEventListener("resize", sendHeightToParent);
