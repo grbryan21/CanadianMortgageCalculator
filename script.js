@@ -759,15 +759,22 @@ document.addEventListener("DOMContentLoaded", () => {
 // Add the Genesis Group domain as a trusted parent
 const trustedParentOrigin = 'https://thegenesisgroup.ca';
 
+function sendHeight() {
+    const height = document.documentElement.scrollHeight; // Use `document.documentElement` for accurate height
+    console.log('Sending height to parent:', height); // Debugging
+    window.parent.postMessage({ height }, trustedParentOrigin);
+}
+
 window.addEventListener('message', (event) => {
-    // Check if the request originates from the trusted domain
     if (event.origin === trustedParentOrigin && event.data.requestHeight) {
-        // Calculate the content height
-        const height = document.body.scrollHeight;
-        // Send the height to the parent domain
-        window.parent.postMessage({ height }, trustedParentOrigin);
+        sendHeight(); // Respond to the parent's height request
     }
 });
+
+// Send height on page load and on resize
+document.addEventListener('DOMContentLoaded', sendHeight);
+window.addEventListener('resize', sendHeight);
+
 
 
 
