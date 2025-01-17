@@ -756,24 +756,10 @@ document.addEventListener("DOMContentLoaded", () => {
   calculateMortgage();
 });
 
-// Add the Genesis Group domain as a trusted parent
-const trustedParentOrigin = 'https://thegenesisgroup.ca';
-
-let debounceTimer;
-
-const sendHeightToParent = () => {
-    const height = document.body.scrollHeight;
-    console.log(`Sending height to parent: ${height}px`);
-    window.parent.postMessage({ height }, trustedParentOrigin);
-};
-
 window.addEventListener('message', (event) => {
-    // Check if the request originates from the trusted domain
-    if (event.origin === trustedParentOrigin && event.data.requestHeight) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(sendHeightToParent, 200); // Send height after 200ms of no changes
-    }
+  if (event.data.requestHeight) {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ height }, event.origin);
+  }
 });
 
-// Send initial height
-sendHeightToParent();
