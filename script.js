@@ -757,7 +757,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Add the Genesis Group domain as a trusted parent
-const trustedParentOrigin = 'https://thegenesisgroup.ca';
+const trustedParentOrigin = window.location.ancestorOrigins 
+    ? window.location.ancestorOrigins[0] 
+    : 'https://thegenesisgroup.ca';
+
 
 // Function to calculate and send the height
 function sendHeight() {
