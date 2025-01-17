@@ -757,32 +757,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Add the Genesis Group domain as a trusted parent
-const trustedParentOrigin = window.location.ancestorOrigins 
-    ? window.location.ancestorOrigins[0] 
-    : 'https://thegenesisgroup.ca';
+const trustedParentOrigin = 'https://thegenesisgroup.ca';
 
+let debounceTimer;
 
-// Function to calculate and send the height
-function sendHeight() {
-    const height = document.documentElement.scrollHeight || document.body.scrollHeight; // Get document's full height
+const sendHeightToParent = () => {
+    const height = document.body.scrollHeight;
     console.log(`Sending height to parent: ${height}px`);
     window.parent.postMessage({ height }, trustedParentOrigin);
-}
+};
 
-// Handle parent requests for height
 window.addEventListener('message', (event) => {
+    // Check if the request originates from the trusted domain
     if (event.origin === trustedParentOrigin && event.data.requestHeight) {
-        console.log('Parent requested height, responding...');
-        sendHeight();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(sendHeightToParent, 200); // Send height after 200ms of no changes
     }
 });
 
-// Send initial height on load
-document.addEventListener('DOMContentLoaded', sendHeight);
-
-// Dynamically send height updates on resize or content changes
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(sendHeight, 100); // Debounce resizing events
-});
+// Send initial height
+sendHeightToParent();
