@@ -1,110 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ------------------------------------------------------------------
-  // 1. ELEMENT REFERENCES (With optional checks)
-  // ------------------------------------------------------------------
-  function $(id) { return document.getElementById(id); }
-
-  const mortgageSizeInput        = $("mortgageSize");
-  const mortgageSizeSlider       = $("mortgageSizeSlider");
-  const mortgageSizeSliderValue  = $("mortgageSizeSliderValue");
-
-  const downPaymentInput         = $("downPaymentInput");
-  const downPaymentSlider        = $("downPaymentSlider");
-  const downPaymentPercentDisplay= $("downPaymentPercentDisplay");
-  const downPaymentSliderValue   = $("downPaymentSliderValue");
-
-  const propertyType             = $("propertyType");
-  const paymentFrequencySelect   = $("paymentFrequency");
-  const fixedRateBtn             = $("fixedRateBtn");
-  const variableRateBtn          = $("variableRateBtn");
-  const interestRateInput        = $("interestRateInput");
-  const interestRateSlider       = $("interestRateSlider");
-  const interestRateSliderValue  = $("interestRateSliderValue");
-  
-  const mortgageTermSelect       = $("mortgageTermSelect");
-  const amortizationRange        = $("amortization");
-  const amortizationDisplay      = $("amortizationDisplay");
-
-  // Home Expenses
-  const propertyTax              = $("propertyTax");
-  const propertyTaxMonthly       = $("propertyTaxMonthly");
-  const condoFeesSlider          = $("condoFeesSlider");
-  const condoFees                = $("condoFees");
-  const heatSlider               = $("heatSlider");
-  const heat                     = $("heat");
-  const otherExpensesSlider      = $("otherExpensesSlider");
-  const otherExpenses            = $("otherExpenses");
-
-  // Rental
-  const rentalIncomeToggle       = $("rentalIncomeToggle");
-  const rentalIncomeSection      = $("rentalIncomeSection");
-  const rentalIncomeYearly       = $("rentalIncomeYearly");
-  const rentalIncomeMonthly      = $("rentalIncomeMonthly");
-
-  // Faster
-  const fasterFrequencySlider    = $("fasterFrequencySlider");
-  const fasterFrequencyValue     = $("fasterFrequencyValue");
-  const fasterFrequencyDropdown  = $("fasterFrequencyDropdown");
-  const oneTimePaymentSlider     = $("oneTimePaymentSlider");
-  const oneTimePayment           = $("oneTimePayment");
-  const annualPrepaymentSlider   = $("annualPrepaymentSlider");
-  const annualPrepayment         = $("annualPrepayment");
-  const includesExtraLine        = $("includesExtraLine");
-
-  // Advanced
-  const loanType                 = $("loanType");
-  const compoundingFrequency     = $("compoundingFrequency");
-
-  // Right column
-  const totalMonthlyCost         = $("totalMonthlyCost");
-  const extraPaymentPercent      = $("extraPaymentPercent");
-  const monthlyMortgageItem      = $("monthlyMortgageItem");
-  const homeExpensesItem         = $("homeExpensesItem");
-  const otherExpensesItem        = $("otherExpensesItem");
-  const rentalIncomeItem         = $("rentalIncomeItem");
-
-  const mortgageSizeDisplay      = $("mortgageSizeDisplay");
-  const downPaymentDisplay       = $("downPaymentDisplay");
-  const insuranceCostDisplay2    = $("insuranceCostDisplay2");
-  const mortgagePaymentDetails   = $("mortgagePaymentDetails");
-  const netMortgageInsurance     = $("netMortgageInsurance");
-  const interestOverTerm         = $("interestOverTerm");
-  const interestSavingLabel      = $("interestSavingLabel");
-  const balanceEndOfTerm         = $("balanceEndOfTerm");
-  const effectiveAmortization    = $("effectiveAmortization");
-  const fasterAmortLabel         = $("fasterAmortLabel");
-
-  const uninsurableComparison    = $("uninsurableComparison");
-  const uninsurableUserPayment   = $("uninsurableUserPayment");
-  const uninsurableMinDownPayment= $("uninsurableMinDownPayment");
-
-  // Scenario B
-  const scenarioBMortgageAmount  = $("scenarioBMortgageAmount");
-  const scenarioBDownPayment     = $("scenarioBDownPayment");
-  const scenarioBInterestRate    = $("scenarioBInterestRate");
-  const scenarioBAmortization    = $("scenarioBAmortization");
-  const scenarioBPaymentFrequency= $("scenarioBPaymentFrequency");
-  const scenarioBResult          = $("scenarioBResult");
-  const scenarioBPayment         = $("scenarioBPayment");
-  const scenarioBInterestPaid    = $("scenarioBInterestPaid");
-  const scenarioBInsurance       = $("scenarioBInsurance");
-  const calculateScenarioBButton = $("calculateScenarioB");
-
-  // CTA Buttons
-  const downloadReportButton     = $("downloadReport");
-  const applyNowBtn              = $("applyNowBtn");
-
-  // ------------------------------------------------------------------
-  // 2. UTILITY FUNCTIONS
-  // ------------------------------------------------------------------
+  /************************************************************
+   * 1) UTILITY FUNCTIONS
+   ************************************************************/
+  function $(id) {
+    return document.getElementById(id);
+  }
 
   function parseCurrency(str) {
     return parseFloat(str.replace(/,/g, "")) || 0;
   }
+
   function formatInt(num) {
     if (isNaN(num)) return "0";
-    return num.toLocaleString(undefined);
+    return num.toLocaleString(undefined); // no decimals
   }
+
   function formatCurrency(num) {
     if (isNaN(num)) return "$0.00";
     return `$${num.toLocaleString(undefined, {
@@ -112,294 +22,402 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 2
     })}`;
   }
+
   function clamp(val, min, max) {
     return Math.max(min, Math.min(val, max));
   }
+
   function formatIntCurrency(num) {
     if (isNaN(num)) return "$0";
     return "$" + parseInt(num, 10).toLocaleString(undefined);
   }
 
-  // Convert nominal rate + compounding freq => annual effective
+  /************************************************************
+   * 2) COMPOUNDING / MORTGAGE CALC LOGIC
+   ************************************************************/
+  // Convert nominal rate & compounding freq => annual effective
   function getEffectiveRate(nominal, compFreq) {
-    if (!compFreq) compFreq="2"; // default
-    switch(compFreq){
-      case "12": { // monthly
-        return Math.pow(1+ nominal/12, 12)-1;
-      }
-      case "26": { // bi-weekly
-        return Math.pow(1+ nominal/26, 26)-1;
-      }
-      case "52": { // weekly
-        return Math.pow(1+ nominal/52, 52)-1;
-      }
-      case "365": { // daily
-        return Math.pow(1+ nominal/365, 365)-1;
-      }
-      default: { 
-        // 2 => semi-ann
-        return Math.pow(1+ nominal/2, 2)-1;
-      }
+    switch (compFreq) {
+      case "12": // monthly
+        return Math.pow(1 + nominal / 12, 12) - 1;
+      case "26": // bi-weekly
+        return Math.pow(1 + nominal / 26, 26) - 1;
+      case "52": // weekly
+        return Math.pow(1 + nominal / 52, 52) - 1;
+      case "365": // daily
+        return Math.pow(1 + nominal / 365, 365) - 1;
+      default:
+        // "2" => semi-annually
+        return Math.pow(1 + nominal / 2, 2) - 1;
     }
   }
-  // From annual effective => periodic => freq times per year
+
+  // from annual effective => periodic => freq times per year
   function getPeriodicRate(nominal, freq, compFreq) {
-    let annualEff= getEffectiveRate(nominal, compFreq);
-    return Math.pow(1+ annualEff, 1/freq)-1;
+    const annualEff = getEffectiveRate(nominal, compFreq);
+    return Math.pow(1 + annualEff, 1 / freq) - 1;
   }
 
-  // Standard mortgage pmt formula
   function calcPmt(principal, perRate, totalN) {
-    if (perRate<=0) return principal/ totalN;
-    return principal* (perRate* Math.pow(1+ perRate, totalN)) / (Math.pow(1+ perRate, totalN)-1);
+    if (perRate <= 0) return principal / totalN;
+    return (
+      principal *
+      ((perRate * Math.pow(1 + perRate, totalN)) /
+        (Math.pow(1 + perRate, totalN) - 1))
+    );
   }
 
-  function getInsuranceRate(ltv){
-    if(ltv<=0.80) return 0;
-    if(ltv<=0.85) return 0.018;
-    if(ltv<=0.90) return 0.024;
-    if(ltv<=0.95) return 0.031;
+  function getInsuranceRate(ltv) {
+    if (ltv <= 0.80) return 0;
+    if (ltv <= 0.85) return 0.018;
+    if (ltv <= 0.90) return 0.024;
+    if (ltv <= 0.95) return 0.031;
     return null; // not insurable above 95%
   }
 
-  // "One-time" lumpsum on iteration=0, annual lumpsum each 'year' 
-  function doAmort(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, totalN, isIO) {
-    let bal= principal;
-    let totInt=0, totPrin=0;
+  // lumpsum once at the start, lumpsumAnnual each "year"
+  function doAmort(
+    principal,
+    perRate,
+    freq,
+    lumpsumAnnual,
+    lumpsumOnce,
+    extraFrac,
+    totalN,
+    isIO
+  ) {
+    let bal = principal;
+    let totInt = 0;
+    let totPrin = 0;
 
-    // lumpsum once at iteration=0
-    if(lumpsumOnce>0 && bal>0){
-      const used= Math.min(bal, lumpsumOnce);
-      bal-= used;
-      totPrin+= used;
-      if(bal<0) bal=0;
+    // lumpsum once immediately
+    if (lumpsumOnce > 0 && bal > 0) {
+      const used = Math.min(bal, lumpsumOnce);
+      bal -= used;
+      totPrin += used;
+      if (bal < 0) bal = 0;
     }
 
-    // if not interest-only => basePayment
-    let basePayment= calcPmt(principal, perRate, totalN);
+    // basePayment
+    const basePayment = calcPmt(principal, perRate, totalN);
 
-    let yearlyCount=0;
-    for(let i=0; i< totalN; i++){
-      if(bal<=0) break;
+    let yearlyCount = 0;
+    for (let i = 0; i < totalN; i++) {
+      if (bal <= 0) break;
+      const interestPart = bal * perRate;
+      totInt += interestPart;
 
-      let interestPortion= bal* perRate;
-      totInt+= interestPortion;
-
-      let princPortion=0;
-      if(!isIO){
-        // extraFraction => fraction of basePayment
-        // so final payment => basePayment + (basePayment* extraFraction)
-        let fullPmt= basePayment+ (basePayment* extraFraction);
-        princPortion= fullPmt- interestPortion;
+      let princPart = 0;
+      if (!isIO) {
+        const full = basePayment + basePayment * extraFrac;
+        princPart = full - interestPart;
       } else {
-        // interestOnly => base= interest portion => plus "extra fraction" of that?
-        let iOnly= interestPortion;
-        let full= iOnly+ (iOnly* extraFraction); 
-        princPortion= full- interestPortion; 
+        const iOnly = interestPart;
+        const full = iOnly + iOnly * extraFrac;
+        princPart = full - iOnly;
       }
-      if(princPortion<0) princPortion=0;
+      if (princPart < 0) princPart = 0;
 
-      bal-= princPortion;
-      totPrin+= princPortion;
-      if(bal<0) bal=0;
+      bal -= princPart;
+      totPrin += princPart;
+      if (bal < 0) bal = 0;
 
       yearlyCount++;
-      if(yearlyCount=== freq){
-        yearlyCount=0;
-        if(lumpsumAnnual>0 && bal>0){
-          let lum= Math.min(bal, lumpsumAnnual);
-          bal-= lum;
-          totPrin+= lum;
-          if(bal<0) bal=0;
+      if (yearlyCount === freq) {
+        yearlyCount = 0;
+        if (lumpsumAnnual > 0 && bal > 0) {
+          let lum = Math.min(bal, lumpsumAnnual);
+          bal -= lum;
+          totPrin += lum;
+          if (bal < 0) bal = 0;
         }
       }
     }
     return { finalBalance: bal, totalInterest: totInt, totalPrincipal: totPrin };
   }
 
-  // partialTerm => for the user-chosen Term
-  function doPartialAmort(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, partialN, isIO){
-    let bal= principal;
-    let totInt=0;
+  function doPartialAmort(
+    principal,
+    perRate,
+    freq,
+    lumpsumAnnual,
+    lumpsumOnce,
+    extraFrac,
+    partialN,
+    isIO
+  ) {
+    let bal = principal;
+    let partialInt = 0;
 
     // lumpsum once
-    if(lumpsumOnce>0 && bal>0){
-      let used= Math.min(bal, lumpsumOnce);
-      bal-= used;
-      if(bal<0) bal=0;
+    if (lumpsumOnce > 0 && bal > 0) {
+      let used = Math.min(bal, lumpsumOnce);
+      bal -= used;
+      if (bal < 0) bal = 0;
     }
 
-    // base payment for non-IO
-    // we approximate with total= freq*(some big #)
-    let basePayment= calcPmt(principal, perRate, freq*30);
+    // approximate basePayment
+    const basePayment = calcPmt(principal, perRate, freq * 30);
 
-    let yearlyCount=0;
-    for(let i=0; i< partialN; i++){
-      if(bal<=0) break;
-      let interestPortion= bal* perRate;
-      totInt+= interestPortion;
-      let princPortion=0;
-      if(!isIO){
-        let full= basePayment+ (basePayment* extraFraction);
-        princPortion= full- interestPortion;
+    let yCount = 0;
+    for (let i = 0; i < partialN; i++) {
+      if (bal <= 0) break;
+      const interestPart = bal * perRate;
+      partialInt += interestPart;
+
+      let princPart = 0;
+      if (!isIO) {
+        const full = basePayment + basePayment * extraFrac;
+        princPart = full - interestPart;
       } else {
-        let iOnly= interestPortion;
-        let full= iOnly+ (iOnly* extraFraction);
-        princPortion= full- interestPortion;
+        const iOnly = interestPart;
+        const full = iOnly + iOnly * extraFrac;
+        princPart = full - iOnly;
       }
-      if(princPortion<0) princPortion=0;
+      if (princPart < 0) princPart = 0;
 
-      bal-= princPortion;
-      if(bal<0) bal=0;
-
-      yearlyCount++;
-      if(yearlyCount=== freq){
-        yearlyCount=0;
-        if(lumpsumAnnual>0 && bal>0){
-          let lum= Math.min(bal, lumpsumAnnual);
-          bal-= lum;
-          if(bal<0) bal=0;
+      bal -= princPart;
+      if (bal < 0) bal = 0;
+      yCount++;
+      if (yCount === freq) {
+        yCount = 0;
+        if (lumpsumAnnual > 0 && bal > 0) {
+          let lum = Math.min(bal, lumpsumAnnual);
+          bal -= lum;
+          if (bal < 0) bal = 0;
         }
       }
     }
-    return { finalBalance: bal, totalInterest: totInt };
+    return { finalBalance: bal, totalInterest: partialInt };
   }
 
-  // find # payments for full payoff
-  function findPayoffN(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFraction, isIO){
-    let bal= principal;
-    let count=0;
+  function findPayoffN(principal, perRate, freq, lumpsumAnnual, lumpsumOnce, extraFrac, isIO) {
+    let bal = principal;
+    let count = 0;
 
-    // lumpsum once at iteration=0
-    if(lumpsumOnce>0 && bal>0){
-      let used= Math.min(bal, lumpsumOnce);
-      bal-= used;
-      if(bal<0) bal=0;
+    // lumpsum once
+    if (lumpsumOnce > 0 && bal > 0) {
+      const used = Math.min(bal, lumpsumOnce);
+      bal -= used;
+      if (bal < 0) bal = 0;
     }
 
-    let basePayment= calcPmt(principal, perRate, freq*30);
+    const basePayment = calcPmt(principal, perRate, freq * 30);
 
-    let yearlyCount=0;
-    while(bal>0 && count< 99999){
-      let interest= bal* perRate;
-      let princ=0;
-      if(!isIO){
-        let full= basePayment+ (basePayment* extraFraction);
-        princ= full- interest;
+    let yCount = 0;
+    while (bal > 0 && count < 100000) {
+      const interestPart = bal * perRate;
+      let princPart = 0;
+      if (!isIO) {
+        const full = basePayment + basePayment * extraFrac;
+        princPart = full - interestPart;
       } else {
-        let iOnly= interest;
-        let full= iOnly+ (iOnly* extraFraction);
-        princ= full- interest;
+        const iOnly = interestPart;
+        const full = iOnly + iOnly * extraFrac;
+        princPart = full - iOnly;
       }
-      if(princ<0) princ=0;
+      if (princPart < 0) princPart = 0;
 
-      bal-= princ;
-      if(bal<0) bal=0;
-
+      bal -= princPart;
+      if (bal < 0) bal = 0;
       count++;
-      yearlyCount++;
-      if(yearlyCount=== freq){
-        yearlyCount=0;
-        if(lumpsumAnnual>0 && bal>0){
-          let lum= Math.min(bal, lumpsumAnnual);
-          bal-= lum;
-          if(bal<0) bal=0;
+
+      yCount++;
+      if (yCount === freq) {
+        yCount = 0;
+        if (lumpsumAnnual > 0 && bal > 0) {
+          let lum = Math.min(bal, lumpsumAnnual);
+          bal -= lum;
+          if (bal < 0) bal = 0;
         }
       }
     }
     return count;
   }
 
-  function calculateMortgage(){
-    if(!mortgageSizeInput || !downPaymentInput) return; // if minimal
+  /************************************************************
+   * 3) GRAB DOM ELEMENTS
+   ************************************************************/
+  const mortgageSizeInput = $("mortgageSize");
+  const mortgageSizeSlider = $("mortgageSizeSlider");
+  const mortgageSizeSliderValue = $("mortgageSizeSliderValue");
 
+  const downPaymentInput = $("downPaymentInput");
+  const downPaymentSlider = $("downPaymentSlider");
+  const downPaymentPercentDisplay = $("downPaymentPercentDisplay");
+  const downPaymentSliderValue = $("downPaymentSliderValue");
+
+  const propertyTax = $("propertyTax");
+  const propertyTaxMonthly = $("propertyTaxMonthly");
+
+  const condoFees = $("condoFees");
+  const condoFeesSlider = $("condoFeesSlider");
+  const heat = $("heat");
+  const heatSlider = $("heatSlider");
+  const otherExpenses = $("otherExpenses");
+  const otherExpensesSlider = $("otherExpensesSlider");
+
+  const paymentFrequencySelect = $("paymentFrequency");
+  const fixedRateBtn = $("fixedRateBtn");
+  const variableRateBtn = $("variableRateBtn");
+  const interestRateInput = $("interestRateInput");
+  const interestRateSlider = $("interestRateSlider");
+  const interestRateSliderValue = $("interestRateSliderValue");
+  const mortgageTermSelect = $("mortgageTermSelect");
+  const amortizationRange = $("amortization");
+  const amortizationDisplay = $("amortizationDisplay");
+
+  const fasterFrequencySlider = $("fasterFrequencySlider");
+  const fasterFrequencyValue = $("fasterFrequencyValue");
+  const fasterFrequencyDropdown = $("fasterFrequencyDropdown");
+  const includesExtraLine = $("includesExtraLine");
+  const extraPaymentPercent = $("extraPaymentPercent");
+
+  const oneTimePayment = $("oneTimePayment");
+  const oneTimePaymentSlider = $("oneTimePaymentSlider");
+  const annualPrepayment = $("annualPrepayment");
+  const annualPrepaymentSlider = $("annualPrepaymentSlider");
+
+  const loanType = $("loanType");
+  const compoundingFrequency = $("compoundingFrequency");
+
+  const totalMonthlyCost = $("totalMonthlyCost");
+  const monthlyMortgageItem = $("monthlyMortgageItem");
+  const mortgageSizeDisplay = $("mortgageSizeDisplay");
+  const downPaymentDisplay = $("downPaymentDisplay");
+  const insuranceCostDisplay2 = $("insuranceCostDisplay2");
+  const mortgagePaymentDetails = $("mortgagePaymentDetails");
+  const netMortgageInsurance = $("netMortgageInsurance");
+  const interestOverTerm = $("interestOverTerm");
+  const interestSavingLabel = $("interestSavingLabel");
+  const balanceEndOfTerm = $("balanceEndOfTerm");
+  const effectiveAmortization = $("effectiveAmortization");
+  const fasterAmortLabel = $("fasterAmortLabel");
+
+  const homeExpensesItem = $("homeExpensesItem");
+  const otherExpensesItem = $("otherExpensesItem");
+  const rentalIncomeItem = $("rentalIncomeItem");
+
+  const rentalIncomeToggle = $("rentalIncomeToggle");
+  const rentalIncomeSection = $("rentalIncomeSection");
+  const rentalIncomeYearly = $("rentalIncomeYearly");
+  const rentalIncomeMonthly = $("rentalIncomeMonthly");
+
+  const uninsurableComparison = $("uninsurableComparison");
+  const uninsurableUserPayment = $("uninsurableUserPayment");
+  const uninsurableMinDownPayment = $("uninsurableMinDownPayment");
+
+  const scenarioBMortgageAmount = $("scenarioBMortgageAmount");
+  const scenarioBDownPayment = $("scenarioBDownPayment");
+  const scenarioBInterestRate = $("scenarioBInterestRate");
+  const scenarioBAmortization = $("scenarioBAmortization");
+  const scenarioBPaymentFrequency = $("scenarioBPaymentFrequency");
+  const scenarioBResult = $("scenarioBResult");
+  const scenarioBPayment = $("scenarioBPayment");
+  const scenarioBInterestPaid = $("scenarioBInterestPaid");
+  const scenarioBInsurance = $("scenarioBInsurance");
+  const calculateScenarioBButton = $("calculateScenarioB");
+
+  const downloadReportButton = $("downloadReport");
+  const applyNowBtn = $("applyNowBtn");
+
+  /************************************************************
+   * 4) MAIN CALCULATION FUNCTION
+   ************************************************************/
+  function calculateMortgage() {
+    // Hide <5% comparison by default
     uninsurableComparison?.classList.add("d-none");
 
-    // show/hide "Includes x% of extra"
-    let xPct= parseInt(fasterFrequencyDropdown?.value||"0",10);
-    if(xPct>0 && includesExtraLine){
-      includesExtraLine.style.display= "block";
-      extraPaymentPercent.textContent= xPct+"%";
-    } else if(includesExtraLine) {
-      includesExtraLine.style.display= "none";
-      extraPaymentPercent.textContent= "0%";
+    // The user-chosen extra% from dropdown
+    const xPct = parseInt(fasterFrequencyDropdown.value || "0", 10);
+    if (xPct > 0) {
+      includesExtraLine.style.display = "block";
+      extraPaymentPercent.textContent = xPct + "%";
+    } else {
+      includesExtraLine.style.display = "none";
+      extraPaymentPercent.textContent = "0%";
     }
 
-    // inputs
-    const purchaseVal= parseCurrency(mortgageSizeInput.value);
-    const dpVal= parseCurrency(downPaymentInput.value);
-    let nominalRate= parseFloat(interestRateInput.value)/100 ||0;
-    if(variableRateBtn && variableRateBtn.checked){
-      nominalRate+= 0.01; // e.g. +1% for variable
+    const purchaseVal = parseCurrency(mortgageSizeInput.value);
+    const dpVal = parseCurrency(downPaymentInput.value);
+
+    // If variable is checked => +1% to nominal
+    let nominalRate = parseFloat(interestRateInput.value) / 100 || 0;
+    if (variableRateBtn && variableRateBtn.checked) {
+      nominalRate += 0.01;
     }
 
-    let baseFreq=12;
-    if(paymentFrequencySelect){
-      switch(paymentFrequencySelect.value){
-        case "weekly-standard": baseFreq=52; break;
-        case "daily": baseFreq=365; break;
-        case "semiannual": baseFreq=2; break;
-        default: baseFreq=12; break;
-      }
+    // standard freq from Payment Frequency select
+    let baseFreq = 12;
+    switch (paymentFrequencySelect.value) {
+      case "weekly-standard":
+        baseFreq = 52;
+        break;
+      case "daily":
+        baseFreq = 365;
+        break;
+      case "semiannual":
+        baseFreq = 2;
+        break;
+      default:
+        baseFreq = 12;
     }
 
-    let freqSliderVal= parseInt(fasterFrequencySlider?.value||"0",10);
-    if(freqSliderVal<1) freqSliderVal= baseFreq;
-    if(fasterFrequencyValue) {
-      fasterFrequencyValue.textContent= freqSliderVal.toString();
+    // accelerated freq from slider, but only if xPct > 0
+    let freqSliderVal = parseInt(fasterFrequencySlider.value || "0", 10);
+    // If the user selected 0% extra, we ignore the accelerated freq
+    let actualFreq = baseFreq;
+    if (xPct > 0 && freqSliderVal > 0) {
+      actualFreq = freqSliderVal;
     }
 
-    let compFreqVal= compoundingFrequency?.value||"2"; // default semi-ann
-    let perRate= getPeriodicRate(nominalRate, freqSliderVal, compFreqVal);
-
-    let years= parseInt(amortizationRange.value,10)||25; 
-    years= clamp(years,5,30);
-    if(amortizationDisplay) amortizationDisplay.textContent= years.toString();
-
-    // insurance if dp<20%
-    let insurance=0;
-    const loan= purchaseVal- dpVal;
-    if(dpVal< 0.2* purchaseVal && purchaseVal<=1500000 && loan>0){
-      let ltv= loan/ purchaseVal;
-      let iRate= getInsuranceRate(ltv);
-      if(iRate!== null) insurance= iRate* loan;
+    if (fasterFrequencyValue) {
+      fasterFrequencyValue.textContent = freqSliderVal.toString();
     }
-    const financed= loan+ insurance;
+
+    // compounding freq from advanced
+    let compFreqVal = compoundingFrequency.value || "2"; // default semi-ann
+    // periodic interest
+    let perRate = getPeriodicRate(nominalRate, actualFreq, compFreqVal);
+
+    // years from amort range
+    let years = parseInt(amortizationRange.value, 10) || 25;
+    years = clamp(years, 5, 30);
+    amortizationDisplay.textContent = years.toString();
+
+    // insurance if dp < 20%
+    let insurance = 0;
+    const loan = purchaseVal - dpVal;
+    if (dpVal < 0.2 * purchaseVal && purchaseVal <= 1500000 && loan > 0) {
+      const ltv = loan / purchaseVal;
+      const iRate = getInsuranceRate(ltv);
+      if (iRate !== null) insurance = iRate * loan;
+    }
+    const financed = loan + insurance;
 
     // lumpsums
-    let oneT= parseFloat(oneTimePayment.value)||0;
-    let annT= parseFloat(annualPrepayment.value)||0;
+    let oneT = parseCurrency(oneTimePayment.value);
+    let annT = parseCurrency(annualPrepayment.value);
 
     // interest only?
-    let isIO= (loanType && loanType.value==="interestOnly");
+    const isIO = loanType.value === "interestOnly";
+    const extraFrac = xPct / 100;
 
-    // extra fraction => xPct => 0.05 => etc
-    let extraFrac= xPct/100;
+    // total # payments
+    const totalN = actualFreq * years;
 
-    // full # of payments
-    const totalN= freqSliderVal* years;
+    // do full amort
+    const mainRes = doAmort(financed, perRate, actualFreq, annT, oneT, extraFrac, totalN, isIO);
+    const finalBal = mainRes.finalBalance;
+    const totalInt = mainRes.totalInterest;
 
-    // main result
-    let mainRes= doAmort(
+    // partial => user-chosen mortgageTerm
+    let chosenTerm = parseInt(mortgageTermSelect.value || "5", 10);
+    let partialN = actualFreq * chosenTerm;
+    const partialRes = doPartialAmort(
       financed,
       perRate,
-      freqSliderVal,
-      annT,
-      oneT,
-      extraFrac,
-      totalN,
-      isIO
-    );
-    let finalBal= mainRes.finalBalance;
-    let totalInt= mainRes.totalInterest;
-
-    // partial => user-chosen term
-    let chosenTerm= parseInt(mortgageTermSelect?.value||"5",10)||5;
-    let partialN= freqSliderVal* chosenTerm;
-    let partialRes= doPartialAmort(
-      financed,
-      perRate,
-      freqSliderVal,
+      actualFreq,
       annT,
       oneT,
       extraFrac,
@@ -407,359 +425,354 @@ document.addEventListener("DOMContentLoaded", () => {
       isIO
     );
 
-    // display
-    if(mortgageSizeDisplay) mortgageSizeDisplay.textContent= formatIntCurrency(purchaseVal);
-    if(downPaymentDisplay) downPaymentDisplay.textContent= formatIntCurrency(dpVal);
-    if(insuranceCostDisplay2) insuranceCostDisplay2.textContent= formatCurrency(insurance);
-
     // freq label
-    let freqLabel="";
-    switch(paymentFrequencySelect?.value){
-      case "weekly-standard": freqLabel="/weekly"; break;
-      case "daily": freqLabel="/daily"; break;
-      case "semiannual": freqLabel="/semi-annually"; break;
-      default: freqLabel="/monthly"; break;
+    let freqLabel = "/monthly";
+    switch (paymentFrequencySelect.value) {
+      case "weekly-standard":
+        freqLabel = "/weekly";
+        break;
+      case "daily":
+        freqLabel = "/daily";
+        break;
+      case "semiannual":
+        freqLabel = "/semi-annually";
+        break;
+      default:
+        freqLabel = "/monthly";
     }
 
-    // compute basePayment just for display
-    let basePay=0;
-    if(!isIO){
-      // base + extra => do one period
-      basePay= calcPmt(financed, perRate, totalN);
-      basePay= basePay+ (basePay* extraFrac);
+    // approximate "mortgage payment"
+    let basePay = 0;
+    if (!isIO) {
+      basePay = calcPmt(financed, perRate, totalN);
+      basePay += basePay * extraFrac;
     } else {
-      let iOnly= financed* perRate;
-      basePay= iOnly+ (iOnly* extraFrac);
-    }
-    if(totalMonthlyCost){
-      totalMonthlyCost.textContent= formatCurrency(basePay)+ freqLabel;
-    }
-    if(monthlyMortgageItem){
-      monthlyMortgageItem.textContent= formatCurrency(basePay);
-    }
-    if(mortgagePaymentDetails){
-      mortgagePaymentDetails.textContent= formatCurrency(basePay)+ freqLabel;
-    }
-    if(netMortgageInsurance){
-      netMortgageInsurance.textContent= formatCurrency(financed);
+      let iOnly = financed * perRate;
+      basePay = iOnly + iOnly * extraFrac;
     }
 
-    // partial => interestOverTerm + balance
-    if(interestOverTerm){
-      interestOverTerm.textContent= formatCurrency(partialRes.totalInterest);
+    // fill right side
+    totalMonthlyCost.textContent = formatCurrency(basePay) + freqLabel;
+    monthlyMortgageItem.textContent = formatCurrency(basePay);
+    mortgagePaymentDetails.textContent = formatCurrency(basePay) + freqLabel;
+    netMortgageInsurance.textContent = formatCurrency(financed);
+
+    if (interestOverTerm) {
+      interestOverTerm.textContent = formatCurrency(partialRes.totalInterest);
     }
-    if(balanceEndOfTerm){
-      balanceEndOfTerm.textContent= formatCurrency(partialRes.finalBalance);
+    if (balanceEndOfTerm) {
+      balanceEndOfTerm.textContent = formatCurrency(partialRes.finalBalance);
     }
 
-    // interest saving => do baseline no lumpsum/ no extra
-    let baseline= doAmort(financed, perRate, freqSliderVal, 0,0,0, totalN, isIO);
-    let saving= baseline.totalInterest- totalInt;
-    if(saving>0 && interestSavingLabel){
-      interestSavingLabel.textContent= `(INTEREST SAVING ${formatCurrency(saving)})`;
-    } else if(interestSavingLabel){
-      interestSavingLabel.textContent= `(INTEREST SAVING $0)`;
+    // interest saving => compare baseline
+    let baseline = doAmort(financed, perRate, actualFreq, 0, 0, 0, totalN, isIO);
+    let saving = baseline.totalInterest - totalInt;
+    if (saving > 0) {
+      interestSavingLabel.textContent = `(INTEREST SAVING ${formatCurrency(saving)})`;
+    } else {
+      interestSavingLabel.textContent = `(INTEREST SAVING $0)`;
     }
 
     // effective amort
-    let payoffCount= findPayoffN(financed, perRate, freqSliderVal, annT, oneT, extraFrac, isIO);
-    let effYears= Math.floor(payoffCount/ freqSliderVal);
-    let effRem= (payoffCount/ freqSliderVal)- effYears;
-    let effMo= Math.round(effRem*12);
-    if(effectiveAmortization){
-      effectiveAmortization.textContent= `${effYears} yr ${effMo} mo`;
-    }
-    if(effYears< years && fasterAmortLabel){
-      let diff= years- effYears;
-      fasterAmortLabel.textContent= `(${diff} years faster)`;
-    } else if(fasterAmortLabel){
-      fasterAmortLabel.textContent= `(0 years faster)`;
-    }
-
-    // home expenses
-    let annTax= parseFloat(propertyTax?.value||"0");
-    let moTax= parseFloat(propertyTaxMonthly?.value||"0");
-    if(annTax>0) moTax= annTax/12;
-    else if(moTax>0) annTax= moTax*12;
-    if(propertyTax) propertyTax.value= annTax.toFixed(2);
-    if(propertyTaxMonthly) propertyTaxMonthly.value= moTax.toFixed(2);
-
-    let cFee= parseFloat(condoFees?.value||"0");
-    let hFee= parseFloat(heat?.value||"0");
-    let oFee= parseFloat(otherExpenses?.value||"0");
-
-    let rent=0;
-    if(rentalIncomeToggle && rentalIncomeToggle.checked){
-      let yRent= parseFloat(rentalIncomeYearly?.value||"0");
-      let mRent= parseFloat(rentalIncomeMonthly?.value||"0");
-      rent= (yRent>0)? (yRent/12): mRent;
-    }
-    let moHome= moTax+ cFee+ hFee;
-    let moTotal= basePay+ moHome+ oFee- rent;
-    if(homeExpensesItem) homeExpensesItem.textContent= formatCurrency(moHome);
-    if(otherExpensesItem) otherExpensesItem.textContent= formatCurrency(oFee);
-    if(rentalIncomeItem) rentalIncomeItem.textContent= (rent>0)? `- ${formatCurrency(rent)}`:"$0.00";
-
-    if(moTotal<0 && totalMonthlyCost){
-      totalMonthlyCost.textContent= "$0.00";
-    } else if(totalMonthlyCost){
-      totalMonthlyCost.textContent= formatCurrency(moTotal)+ freqLabel;
-    }
-
-    // <5% => show comparison
-    if(dpVal>0 && dpVal< 0.05* purchaseVal && uninsurableComparison){
-      uninsurableComparison.classList.remove("d-none");
-      if(uninsurableUserPayment) uninsurableUserPayment.textContent= formatCurrency(basePay);
-      if(uninsurableMinDownPayment) uninsurableMinDownPayment.textContent= formatCurrency(basePay*0.98);
-    } else if(uninsurableComparison){
-      uninsurableComparison.classList.add("d-none");
+    let payoffCount = findPayoffN(financed, perRate, actualFreq, annT, oneT, extraFrac, isIO);
+    let effYears = Math.floor(payoffCount / actualFreq);
+    let frac = payoffCount / actualFreq - effYears;
+    let effMo = Math.round(frac * 12);
+    effectiveAmortization.textContent = `${effYears} yr ${effMo} mo`;
+    if (effYears < years) {
+      let diff = years - effYears;
+      fasterAmortLabel.textContent = `(${diff} years faster)`;
+    } else {
+      fasterAmortLabel.textContent = `(0 years faster)`;
     }
 
     // reformat left side
-    if(mortgageSizeInput) mortgageSizeInput.value= formatInt(purchaseVal);
-    if(downPaymentInput)  downPaymentInput.value= formatInt(dpVal);
+    mortgageSizeInput.value = formatInt(purchaseVal);
+    downPaymentInput.value = formatInt(dpVal);
+
+    // <5% => show comparison
+    uninsurableComparison.classList.add("d-none");
+    if (dpVal > 0 && dpVal < 0.05 * purchaseVal) {
+      uninsurableComparison.classList.remove("d-none");
+      uninsurableUserPayment.textContent = formatCurrency(basePay);
+      uninsurableMinDownPayment.textContent = formatCurrency(basePay * 0.98);
+    }
+
+    // propertyTax sync
+    handlePropertyTaxSync();
+
+    // read expenses
+    let cFee = parseCurrency(condoFees.value);
+    let hFee = parseCurrency(heat.value);
+    let oFee = parseCurrency(otherExpenses.value);
+
+    // rental
+    let rent = 0;
+    if (rentalIncomeToggle.checked) {
+      let yRent = parseCurrency(rentalIncomeYearly.value);
+      let mRent = parseCurrency(rentalIncomeMonthly.value);
+      rent = yRent > 0 ? yRent / 12 : mRent;
+    }
+
+    // compute final
+    let moTax = parseCurrency(propertyTaxMonthly.value);
+    let moHome = moTax + cFee + hFee;
+    let moTotal = basePay + moHome + oFee - rent;
+    homeExpensesItem.textContent = formatCurrency(moHome);
+    otherExpensesItem.textContent = formatCurrency(oFee);
+    rentalIncomeItem.textContent = rent > 0 ? `- ${formatCurrency(rent)}` : "$0.00";
+
+    if (moTotal < 0) {
+      totalMonthlyCost.textContent = "$0.00";
+    } else {
+      totalMonthlyCost.textContent = formatCurrency(moTotal) + freqLabel;
+    }
+
+    // fill insurance etc.
+    mortgageSizeDisplay.textContent = formatIntCurrency(purchaseVal);
+    downPaymentDisplay.textContent = formatIntCurrency(dpVal);
+    insuranceCostDisplay2.textContent = formatCurrency(insurance);
   }
 
-  function calculateScenarioB(){
-    if(!scenarioBResult) return;
+  // If user types in annual, recalc monthly; if user types in monthly, recalc annual
+  function handlePropertyTaxSync() {
+    // parse them
+    let rawAnn = propertyTax.value.replace(/,/g, "");
+    let rawMo = propertyTaxMonthly.value.replace(/,/g, "");
+    let valAnn = parseFloat(rawAnn) || 0;
+    let valMo = parseFloat(rawMo) || 0;
+    if (document.activeElement === propertyTax) {
+      // user typed annual => recalc monthly
+      valMo = valAnn / 12;
+      propertyTaxMonthly.value = formatInt(valMo);
+    } else if (document.activeElement === propertyTaxMonthly) {
+      // user typed monthly => recalc annual
+      valAnn = valMo * 12;
+      propertyTax.value = formatInt(valAnn);
+    }
+    // ensure commas
+    propertyTax.value = formatInt(parseCurrency(propertyTax.value));
+    propertyTaxMonthly.value = formatInt(parseCurrency(propertyTaxMonthly.value));
+  }
+
+  function calculateScenarioB() {
     scenarioBResult.classList.remove("d-none");
-    if(scenarioBPayment) scenarioBPayment.textContent= "$1,234.56";
-    if(scenarioBInterestPaid) scenarioBInterestPaid.textContent= "$11,000.00";
-    if(scenarioBInsurance) scenarioBInsurance.textContent= "$0.00";
+    scenarioBPayment.textContent = "$1,234.56";
+    scenarioBInterestPaid.textContent = "$11,000.00";
+    scenarioBInsurance.textContent = "$0.00";
   }
 
-  // ------------------------------------------------------------------
-  // 3. EVENT LISTENERS (Check for element existence)
-  // ------------------------------------------------------------------
-
-  if(mortgageSizeInput) {
-    mortgageSizeInput.addEventListener("input", e=>{
-      let raw= e.target.value.replace(/,/g,"");
-      let num= parseInt(raw)||0;
-      e.target.value= formatInt(num);
-      if(mortgageSizeSlider){
-        mortgageSizeSlider.value= num;
-        if(mortgageSizeSliderValue){
-          mortgageSizeSliderValue.textContent= "$"+ formatInt(num);
-        }
-      }
-      calculateMortgage();
-    });
-  }
-  if(mortgageSizeSlider) {
-    mortgageSizeSlider.addEventListener("input", e=>{
-      let val= parseInt(e.target.value,10);
-      if(mortgageSizeInput) mortgageSizeInput.value= formatInt(val);
-      if(mortgageSizeSliderValue) mortgageSizeSliderValue.textContent= "$"+ formatInt(val);
-      calculateMortgage();
-    });
+  /************************************************************
+   * 5) HELPER: REFORMAT ON INPUT
+   ************************************************************/
+  function handleInputWithCommas(e) {
+    let raw = e.target.value.replace(/,/g, "");
+    let num = parseFloat(raw) || 0;
+    // format with commas (no decimals, e.g. 1,234)
+    e.target.value = formatInt(num);
+    calculateMortgage();
   }
 
-  if(downPaymentInput) {
-    downPaymentInput.addEventListener("input", e=>{
-      let raw= e.target.value.replace(/,/g,"");
-      let num= parseInt(raw)||0;
-      e.target.value= formatInt(num);
-      let mort= parseInt(mortgageSizeSlider?.value||"0",10);
-      let pct= (num/mort)*100; pct= clamp(pct,0,100);
-      if(downPaymentSlider){
-        downPaymentSlider.value= pct.toFixed(0);
-      }
-      if(downPaymentSliderValue){
-        downPaymentSliderValue.textContent= "$"+ formatInt(num);
-      }
-      calculateMortgage();
-    });
-  }
-  if(downPaymentSlider) {
-    downPaymentSlider.addEventListener("input", e=>{
-      let mort= parseInt(mortgageSizeSlider?.value||"0",10)||0;
-      let sVal= parseInt(e.target.value,10)||0;
-      let dp= Math.round((sVal/100)* mort);
-      if(downPaymentInput) downPaymentInput.value= formatInt(dp);
-      if(downPaymentSliderValue) downPaymentSliderValue.textContent= "$"+ formatInt(dp);
-      if(downPaymentPercentDisplay) downPaymentPercentDisplay.textContent= sVal+"%";
-      calculateMortgage();
-    });
+  /************************************************************
+   * 6) ADD EVENT LISTENERS
+   ************************************************************/
+  // Text fields => parse + reformat with commas
+  [
+    mortgageSizeInput,
+    downPaymentInput,
+    propertyTax,
+    propertyTaxMonthly,
+    condoFees,
+    heat,
+    otherExpenses,
+    oneTimePayment,
+    annualPrepayment,
+    rentalIncomeYearly,
+    rentalIncomeMonthly
+  ].forEach((el) => {
+    if (!el) return;
+    el.addEventListener("input", handleInputWithCommas);
+  });
+
+  // Sliders => keep as numeric
+  mortgageSizeSlider?.addEventListener("input", () => {
+    let val = parseInt(mortgageSizeSlider.value, 10) || 0;
+    mortgageSizeInput.value = formatInt(val);
+    mortgageSizeSliderValue.textContent = "$" + formatInt(val);
+    calculateMortgage();
+  });
+
+  downPaymentSlider?.addEventListener("input", () => {
+    let mortVal = parseInt(mortgageSizeSlider.value, 10) || 0;
+    let sVal = parseInt(downPaymentSlider.value, 10) || 0;
+    let dp = Math.round((sVal / 100) * mortVal);
+    downPaymentInput.value = formatInt(dp);
+    if (downPaymentSliderValue) downPaymentSliderValue.textContent = "$" + formatInt(dp);
+    if (downPaymentPercentDisplay) downPaymentPercentDisplay.textContent = sVal + "%";
+    calculateMortgage();
+  });
+
+  // Sliders in Home Expenses
+  condoFeesSlider?.addEventListener("input", (e) => {
+    if (condoFees) {
+      condoFees.value = formatInt(parseFloat(e.target.value) || 0);
+    }
+    calculateMortgage();
+  });
+  heatSlider?.addEventListener("input", (e) => {
+    if (heat) {
+      heat.value = formatInt(parseFloat(e.target.value) || 0);
+    }
+    calculateMortgage();
+  });
+  otherExpensesSlider?.addEventListener("input", (e) => {
+    if (otherExpenses) {
+      otherExpenses.value = formatInt(parseFloat(e.target.value) || 0);
+    }
+    calculateMortgage();
+  });
+
+  // Sliders in Faster
+  fasterFrequencySlider?.addEventListener("input", (e) => {
+    if (fasterFrequencyValue) fasterFrequencyValue.textContent = e.target.value;
+    calculateMortgage();
+  });
+  fasterFrequencyDropdown?.addEventListener("change", calculateMortgage);
+
+  oneTimePaymentSlider?.addEventListener("input", (e) => {
+    if (oneTimePayment) {
+      oneTimePayment.value = formatInt(parseFloat(e.target.value) || 0);
+    }
+    calculateMortgage();
+  });
+  annualPrepaymentSlider?.addEventListener("input", (e) => {
+    if (annualPrepayment) {
+      annualPrepayment.value = formatInt(parseFloat(e.target.value) || 0);
+    }
+    calculateMortgage();
+  });
+
+  // Toggles & dropdowns
+  paymentFrequencySelect?.addEventListener("change", calculateMortgage);
+  fixedRateBtn?.addEventListener("change", calculateMortgage);
+  variableRateBtn?.addEventListener("change", calculateMortgage);
+  mortgageTermSelect?.addEventListener("change", calculateMortgage);
+  amortizationRange?.addEventListener("input", (e) => {
+    amortizationDisplay.textContent = e.target.value;
+    calculateMortgage();
+  });
+  loanType?.addEventListener("change", calculateMortgage);
+  compoundingFrequency?.addEventListener("change", calculateMortgage);
+
+  rentalIncomeToggle?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      rentalIncomeSection.classList.remove("d-none");
+    } else {
+      rentalIncomeSection.classList.add("d-none");
+      rentalIncomeYearly.value = "0";
+      rentalIncomeMonthly.value = "0";
+    }
+    calculateMortgage();
+  });
+
+  // CTAs
+  downloadReportButton?.addEventListener("click", () => {
+    // 1) Generate CSV data
+    const csvRows = [];
+    // Example: You can store additional details if you like
+    csvRows.push("Mortgage Size,Down Payment,Payment Frequency,Rate");
+    csvRows.push(
+      [
+        parseCurrency(mortgageSizeInput.value),
+        parseCurrency(downPaymentInput.value),
+        paymentFrequencySelect.value,
+        interestRateInput.value
+      ].join(",")
+    );
+    // add more lines for partial results or summary
+    csvRows.push(",,,"); // blank line
+    csvRows.push("Monthly Payment," + totalMonthlyCost.textContent);
+
+    const csvData = csvRows.join("\n");
+
+    // 2) Create a download link
+    const blob = new Blob([csvData], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "MortgageCalculationReport.csv";
+
+    // 3) Trigger the download
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+
+  applyNowBtn?.addEventListener("click", () => {
+    // Navigate to https://thegenesisgroup.ca/apply-now/
+    window.location.href = "https://thegenesisgroup.ca/apply-now/";
+  });
+
+  calculateScenarioBButton?.addEventListener("click", calculateScenarioB);
+
+  /************************************************************
+   * 7) INIT + FIRST CALC
+   ************************************************************/
+  function initSync() {
+    // default slider values
+    mortgageSizeSlider.value = "500000";
+    downPaymentSlider.value = "20";
+    interestRateSlider.value = "4.24";
+    interestRateInput.value = "4.24";
+    fasterFrequencySlider.value = "0";
+    fasterFrequencyValue.textContent = "0";
+    fasterFrequencyDropdown.value = "0";
+    oneTimePayment.value = "0";
+    oneTimePaymentSlider.value = "0";
+    annualPrepayment.value = "0";
+    annualPrepaymentSlider.value = "0";
+    mortgageTermSelect.value = "5";
+    amortizationRange.value = "25";
+    amortizationDisplay.textContent = "25";
+    includesExtraLine.style.display = "none";
+
+    // default text fields
+    mortgageSizeInput.value = "500,000";
+    downPaymentInput.value = "100,000";
+    propertyTax.value = "0";
+    propertyTaxMonthly.value = "0";
+    condoFees.value = "0";
+    heat.value = "0";
+    otherExpenses.value = "0";
+    oneTimePayment.value = "0";
+    annualPrepayment.value = "0";
   }
 
-  if(paymentFrequencySelect){
-    paymentFrequencySelect.addEventListener("change", calculateMortgage);
-  }
-  if(fixedRateBtn) fixedRateBtn.addEventListener("change", calculateMortgage);
-  if(variableRateBtn) variableRateBtn.addEventListener("change", calculateMortgage);
-
-  if(interestRateInput){
-    interestRateInput.addEventListener("input", e=>{
-      let raw= e.target.value.replace(/,/g,"");
-      let val= parseFloat(raw)||0;
-      if(val<0) val=0; if(val>10) val=10;
-      e.target.value= val.toFixed(2);
-      if(interestRateSlider){
-        interestRateSlider.value= val.toString();
-      }
-      if(interestRateSliderValue){
-        interestRateSliderValue.textContent= val.toFixed(2)+"%";
-      }
-      calculateMortgage();
-    });
-  }
-  if(interestRateSlider){
-    interestRateSlider.addEventListener("input", e=>{
-      let v= parseFloat(e.target.value)||0;
-      if(v<0) v=0; if(v>10) v=10;
-      if(interestRateInput) interestRateInput.value= v.toFixed(2);
-      if(interestRateSliderValue) interestRateSliderValue.textContent= v.toFixed(2)+"%";
-      calculateMortgage();
-    });
-  }
-
-  if(mortgageTermSelect){
-    mortgageTermSelect.addEventListener("change", calculateMortgage);
-  }
-  if(amortizationRange){
-    amortizationRange.addEventListener("input", e=>{
-      if(amortizationDisplay) amortizationDisplay.textContent= e.target.value;
-      calculateMortgage();
-    });
-  }
-
-  if(propertyTax) propertyTax.addEventListener("input", calculateMortgage);
-  if(propertyTaxMonthly) propertyTaxMonthly.addEventListener("input", calculateMortgage);
-
-  if(condoFeesSlider){
-    condoFeesSlider.addEventListener("input", e=>{
-      if(condoFees) condoFees.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(condoFees){
-    condoFees.addEventListener("input", e=>{
-      if(condoFeesSlider) condoFeesSlider.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-
-  if(heatSlider){
-    heatSlider.addEventListener("input", e=>{
-      if(heat) heat.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(heat){
-    heat.addEventListener("input", e=>{
-      if(heatSlider) heatSlider.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-
-  if(otherExpensesSlider){
-    otherExpensesSlider.addEventListener("input", e=>{
-      if(otherExpenses) otherExpenses.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(otherExpenses){
-    otherExpenses.addEventListener("input", e=>{
-      if(otherExpensesSlider) otherExpensesSlider.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-
-  if(rentalIncomeToggle){
-    rentalIncomeToggle.addEventListener("change", e=>{
-      if(e.target.checked){
-        rentalIncomeSection?.classList.remove("d-none");
-      } else {
-        rentalIncomeSection?.classList.add("d-none");
-        if(rentalIncomeYearly) rentalIncomeYearly.value="";
-        if(rentalIncomeMonthly) rentalIncomeMonthly.value="";
-      }
-      calculateMortgage();
-    });
-  }
-  if(rentalIncomeYearly) rentalIncomeYearly.addEventListener("input", calculateMortgage);
-  if(rentalIncomeMonthly) rentalIncomeMonthly.addEventListener("input", calculateMortgage);
-
-  if(fasterFrequencySlider){
-    fasterFrequencySlider.addEventListener("input", e=>{
-      if(fasterFrequencyValue) fasterFrequencyValue.textContent= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(fasterFrequencyDropdown){
-    fasterFrequencyDropdown.addEventListener("change", calculateMortgage);
-  }
-
-  if(oneTimePaymentSlider){
-    oneTimePaymentSlider.addEventListener("input", e=>{
-      if(oneTimePayment) oneTimePayment.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(oneTimePayment){
-    oneTimePayment.addEventListener("input", e=>{
-      if(oneTimePaymentSlider) oneTimePaymentSlider.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(annualPrepaymentSlider){
-    annualPrepaymentSlider.addEventListener("input", e=>{
-      if(annualPrepayment) annualPrepayment.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-  if(annualPrepayment){
-    annualPrepayment.addEventListener("input", e=>{
-      if(annualPrepaymentSlider) annualPrepaymentSlider.value= e.target.value;
-      calculateMortgage();
-    });
-  }
-
-  if(loanType) loanType.addEventListener("change", calculateMortgage);
-  if(compoundingFrequency) compoundingFrequency.addEventListener("change", calculateMortgage);
-
-  if(downloadReportButton){
-    downloadReportButton.addEventListener("click", ()=>{
-      alert("Download logic here...");
-    });
-  }
-  if(applyNowBtn){
-    applyNowBtn.addEventListener("click", ()=>{
-      alert("Apply Now logic here...");
-    });
-  }
-
-  if(calculateScenarioBButton){
-    calculateScenarioBButton.addEventListener("click", calculateScenarioB);
-  }
-
-  // init
-  function initSync(){
-    if(mortgageSizeSlider) mortgageSizeSlider.value= "500000";
-    if(downPaymentSlider) downPaymentSlider.value= "20";
-    if(interestRateSlider) interestRateSlider.value= "4.24";
-    if(interestRateInput) interestRateInput.value= "4.24";
-    if(fasterFrequencySlider) fasterFrequencySlider.value= "0";
-    if(fasterFrequencyValue) fasterFrequencyValue.textContent= "0";
-    if(fasterFrequencyDropdown) fasterFrequencyDropdown.value= "0";
-    if(oneTimePayment) oneTimePayment.value= "0";
-    if(oneTimePaymentSlider) oneTimePaymentSlider.value= "0";
-    if(annualPrepayment) annualPrepayment.value= "0";
-    if(annualPrepaymentSlider) annualPrepaymentSlider.value= "0";
-    if(mortgageTermSelect) mortgageTermSelect.value= "5";
-    if(amortizationRange) amortizationRange.value= "25";
-    if(amortizationDisplay) amortizationDisplay.textContent= "25";
-    if(includesExtraLine) includesExtraLine.style.display= "none";
-  }
   initSync();
   calculateMortgage();
+
+  /************************************************************
+   * 8) BOOTSTRAP POPOVERS (auto-close after 3s)
+   ************************************************************/
+  const popoverTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="popover"]')
+  );
+  popoverTriggerList.forEach((el) => {
+    const pop = new bootstrap.Popover(el, {
+      trigger: "manual"
+    });
+    el.addEventListener("click", () => {
+      pop.toggle();
+      setTimeout(() => {
+        pop.hide();
+      }, 3000);
+    });
+  });
 });
 
-window.addEventListener('message', (event) => {
+// For iFrame usage
+window.addEventListener("message", (event) => {
   if (event.data.requestHeight) {
-      const height = document.body.scrollHeight;
-      window.parent.postMessage({ height }, event.origin);
+    const height = document.body.scrollHeight;
+    window.parent.postMessage({ height }, event.origin);
   }
 });
-
