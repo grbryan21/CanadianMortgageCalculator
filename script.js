@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /************************************************************
    * 2) COMPOUNDING / MORTGAGE CALC LOGIC
    ************************************************************/
-  // Convert nominal rate & compounding freq => annual effective
   function getEffectiveRate(nominal, compFreq) {
     switch (compFreq) {
       case "12": // monthly
@@ -52,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // from annual effective => periodic => freq times per year
   function getPeriodicRate(nominal, freq, compFreq) {
     const annualEff = getEffectiveRate(nominal, compFreq);
     return Math.pow(1 + annualEff, 1 / freq) - 1;
@@ -75,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return null; // not insurable above 95%
   }
 
-  // lumpsum once at the start, lumpsumAnnual each "year"
+  // Full amortization
   function doAmort(
     principal,
     perRate,
@@ -90,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let totInt = 0;
     let totPrin = 0;
 
-    // lumpsum once immediately
+    // lumpsum once
     if (lumpsumOnce > 0 && bal > 0) {
       const used = Math.min(bal, lumpsumOnce);
       bal -= used;
@@ -98,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (bal < 0) bal = 0;
     }
 
-    // basePayment
     const basePayment = calcPmt(principal, perRate, totalN);
 
     let yearlyCount = 0;
@@ -112,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const full = basePayment + basePayment * extraFrac;
         princPart = full - interestPart;
       } else {
+        // interest-only
         const iOnly = interestPart;
         const full = iOnly + iOnly * extraFrac;
         princPart = full - iOnly;
@@ -136,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return { finalBalance: bal, totalInterest: totInt, totalPrincipal: totPrin };
   }
 
+  // Partial amortization
   function doPartialAmort(
     principal,
     perRate,
@@ -156,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (bal < 0) bal = 0;
     }
 
-    // approximate basePayment
+    // approximate basePayment for partial calc
     const basePayment = calcPmt(principal, perRate, freq * 30);
 
     let yCount = 0;
@@ -170,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const full = basePayment + basePayment * extraFrac;
         princPart = full - interestPart;
       } else {
+        // interest-only
         const iOnly = interestPart;
         const full = iOnly + iOnly * extraFrac;
         princPart = full - iOnly;
@@ -191,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return { finalBalance: bal, totalInterest: partialInt };
   }
 
+  // Find payoff # of payments
   function findPayoffN(
     principal,
     perRate,
@@ -220,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const full = basePayment + basePayment * extraFrac;
         princPart = full - interestPart;
       } else {
+        // interest-only
         const iOnly = interestPart;
         const full = iOnly + iOnly * extraFrac;
         princPart = full - iOnly;
@@ -244,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /************************************************************
-   * 3) GRAB DOM ELEMENTS
+   * 3) DOM ELEMENTS
    ************************************************************/
   const mortgageSizeInput = $("mortgageSize");
   const mortgageSizeSlider = $("mortgageSizeSlider");
@@ -330,29 +332,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const applyNowBtn = $("applyNowBtn");
 
   /************************************************************
-   * 4) HELPER: PROPERTY TAX & RENTAL SYNC FUNCTIONS
+   * 4) PROPERTY TAX & RENTAL SYNC
    ************************************************************/
-  // If user types in annual, recalc monthly; if user types in monthly, recalc annual
   function handlePropertyTaxSync() {
     let rawAnn = propertyTax.value.replace(/,/g, "");
     let rawMo = propertyTaxMonthly.value.replace(/,/g, "");
     let valAnn = parseFloat(rawAnn) || 0;
     let valMo = parseFloat(rawMo) || 0;
+
     if (document.activeElement === propertyTax) {
-      // user typed annual => recalc monthly
       valMo = valAnn / 12;
       propertyTaxMonthly.value = formatInt(valMo);
     } else if (document.activeElement === propertyTaxMonthly) {
-      // user typed monthly => recalc annual
       valAnn = valMo * 12;
       propertyTax.value = formatInt(valAnn);
     }
-    // ensure commas
-    propertyTax.value = formatInt(parseCurrency(propertyTax.value));
-    propertyTaxMonthly.value = formatInt(parseCurrency(propertyTaxMonthly.value));
   }
 
-  // Sync rental income yearly & monthly
   function handleRentalIncomeSync() {
     let rawYr = rentalIncomeYearly.value.replace(/,/g, "");
     let rawMo = rentalIncomeMonthly.value.replace(/,/g, "");
@@ -360,29 +356,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let valMo = parseFloat(rawMo) || 0;
 
     if (document.activeElement === rentalIncomeYearly) {
-      // user typed annual => recalc monthly
       valMo = valYr / 12;
       rentalIncomeMonthly.value = formatInt(valMo);
     } else if (document.activeElement === rentalIncomeMonthly) {
-      // user typed monthly => recalc annual
       valYr = valMo * 12;
       rentalIncomeYearly.value = formatInt(valYr);
     }
-    rentalIncomeYearly.value = formatInt(parseCurrency(rentalIncomeYearly.value));
-    rentalIncomeMonthly.value = formatInt(parseCurrency(rentalIncomeMonthly.value));
   }
 
   /************************************************************
-   * 5) MAIN CALCULATION FUNCTION
+   * 5) MAIN CALCULATION
    ************************************************************/
   function calculateMortgage() {
-    // Sync property tax on each calc:
     handlePropertyTaxSync();
-    // Sync rental income on each calc:
     handleRentalIncomeSync();
 
-    // Hide <5% comparison by default
-    uninsurableComparison?.classList.add("d-none");
+    uninsurableComparison.classList.add("d-none");
 
     // The user-chosen extra% from dropdown
     const xPct = parseInt(fasterFrequencyDropdown.value || "0", 10);
@@ -397,13 +386,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const purchaseVal = parseCurrency(mortgageSizeInput.value);
     const dpVal = parseCurrency(downPaymentInput.value);
 
-    // nominalRate from interestRateInput
     let nominalRate = parseFloat(interestRateInput.value) / 100 || 0;
     if (variableRateBtn && variableRateBtn.checked) {
       nominalRate += 0.01;
     }
 
-    // standard freq from Payment Frequency select
+    // Payment frequency
     let baseFreq = 12;
     switch (paymentFrequencySelect.value) {
       case "weekly-standard":
@@ -419,29 +407,26 @@ document.addEventListener("DOMContentLoaded", () => {
         baseFreq = 12;
     }
 
-    // accelerated freq from slider, but only if xPct > 0
+    // Accelerated freq if xPct>0
     let freqSliderVal = parseInt(fasterFrequencySlider.value || "0", 10);
-    // If the user selected 0% extra, we ignore the accelerated freq
     let actualFreq = baseFreq;
     if (xPct > 0 && freqSliderVal > 0) {
       actualFreq = freqSliderVal;
     }
-
     if (fasterFrequencyValue) {
       fasterFrequencyValue.textContent = freqSliderVal.toString();
     }
 
-    // compounding freq from advanced
-    let compFreqVal = compoundingFrequency.value || "2"; // default semi-ann
-    // periodic interest
+    // compounding freq
+    let compFreqVal = compoundingFrequency.value || "2"; // semi-ann default
     let perRate = getPeriodicRate(nominalRate, actualFreq, compFreqVal);
 
-    // years from amort range
+    // amortization
     let years = parseInt(amortizationRange.value, 10) || 25;
     years = clamp(years, 5, 30);
     amortizationDisplay.textContent = years.toString();
 
-    // insurance if dp < 20%
+    // insurance if dp < 20% and purchaseVal <= 1.5m
     let insurance = 0;
     const loan = purchaseVal - dpVal;
     if (dpVal < 0.2 * purchaseVal && purchaseVal <= 1500000 && loan > 0) {
@@ -451,28 +436,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const financed = loan + insurance;
 
-    // lumpsums
     let oneT = parseCurrency(oneTimePayment.value);
     let annT = parseCurrency(annualPrepayment.value);
-
-    // interest only?
     const isIO = loanType.value === "interestOnly";
     const extraFrac = xPct / 100;
-
-    // total # payments
     const totalN = actualFreq * years;
 
-    // do full amort
-    const mainRes = doAmort(
-      financed,
-      perRate,
-      actualFreq,
-      annT,
-      oneT,
-      extraFrac,
-      totalN,
-      isIO
-    );
+    // do full
+    const mainRes = doAmort(financed, perRate, actualFreq, annT, oneT, extraFrac, totalN, isIO);
     const finalBal = mainRes.finalBalance;
     const totalInt = mainRes.totalInterest;
 
@@ -506,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
         freqLabel = "/monthly";
     }
 
-    // approximate "mortgage payment"
+    // approximate mortgage payment
     let basePay = 0;
     if (!isIO) {
       basePay = calcPmt(financed, perRate, totalN);
@@ -516,7 +487,6 @@ document.addEventListener("DOMContentLoaded", () => {
       basePay = iOnly + iOnly * extraFrac;
     }
 
-    // fill right side
     totalMonthlyCost.textContent = formatCurrency(basePay) + freqLabel;
     monthlyMortgageItem.textContent = formatCurrency(basePay);
     mortgagePaymentDetails.textContent = formatCurrency(basePay) + freqLabel;
@@ -529,7 +499,6 @@ document.addEventListener("DOMContentLoaded", () => {
       balanceEndOfTerm.textContent = formatCurrency(partialRes.finalBalance);
     }
 
-    // interest saving => compare baseline
     let baseline = doAmort(financed, perRate, actualFreq, 0, 0, 0, totalN, isIO);
     let saving = baseline.totalInterest - totalInt;
     if (saving > 0) {
@@ -539,15 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // effective amort
-    let payoffCount = findPayoffN(
-      financed,
-      perRate,
-      actualFreq,
-      annT,
-      oneT,
-      extraFrac,
-      isIO
-    );
+    let payoffCount = findPayoffN(financed, perRate, actualFreq, annT, oneT, extraFrac, isIO);
     let effYears = Math.floor(payoffCount / actualFreq);
     let frac = payoffCount / actualFreq - effYears;
     let effMo = Math.round(frac * 12);
@@ -584,7 +545,6 @@ document.addEventListener("DOMContentLoaded", () => {
       rent = yRent > 0 ? yRent / 12 : mRent;
     }
 
-    // property tax monthly
     let moTax = parseCurrency(propertyTaxMonthly.value);
     let moHome = moTax + cFee + hFee;
     let moTotal = basePay + moHome + oFee - rent;
@@ -598,7 +558,6 @@ document.addEventListener("DOMContentLoaded", () => {
       totalMonthlyCost.textContent = formatCurrency(moTotal) + freqLabel;
     }
 
-    // fill insurance etc.
     mortgageSizeDisplay.textContent = formatIntCurrency(purchaseVal);
     downPaymentDisplay.textContent = formatIntCurrency(dpVal);
     insuranceCostDisplay2.textContent = formatCurrency(insurance);
@@ -606,44 +565,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function calculateScenarioB() {
     scenarioBResult.classList.remove("d-none");
-    // Just a placeholder. Adjust as desired:
+    // placeholder
     scenarioBPayment.textContent = "$1,234.56";
     scenarioBInterestPaid.textContent = "$11,000.00";
     scenarioBInsurance.textContent = "$0.00";
   }
 
   /************************************************************
-   * 6) EVENT HANDLERS FOR INPUT / SLIDERS
+   * 6) EVENT HANDLERS FOR INPUT & SLIDERS
    ************************************************************/
-
-  // Reusable integer-formatter for most text fields:
-  function handleInputWithCommas(e) {
+  // (A) Generic integer input with partial typing
+  function handleIntegerInput(e) {
     let raw = e.target.value.replace(/,/g, "");
-
-    // If user empties the field, allow it to stay empty:
     if (raw === "") {
       e.target.value = "";
       calculateMortgage();
-      // Also sync the slider if it's the downPaymentInput
-      if (e.target === downPaymentInput) syncDownPaymentSlider();
       return;
     }
+    // keep partial numeric
+    raw = raw.replace(/[^\d]/g, "");
+    e.target.value = raw;
+    calculateMortgage();
+  }
 
+  // finalize integer => add commas
+  function finalizeIntegerInput(e) {
+    let raw = e.target.value.replace(/,/g, "");
+    if (raw === "") {
+      e.target.value = "";
+      calculateMortgage();
+      return;
+    }
     let num = parseFloat(raw) || 0;
     e.target.value = formatInt(num);
 
-    // If it's down payment, update slider to reflect new percentage
+    // Mortgage size => sync slider
+    if (e.target === mortgageSizeInput && mortgageSizeSlider) {
+      const maxVal = parseInt(mortgageSizeSlider.max, 10) || 3000000;
+      if (num > maxVal) {
+        // slider pinned at 3M, but label shows typed value
+        mortgageSizeSlider.value = maxVal;
+        mortgageSizeSliderValue.textContent = `$${formatInt(num)}`; 
+      } else {
+        // within slider range
+        mortgageSizeSlider.value = String(num);
+        mortgageSizeSliderValue.textContent = `$${formatInt(num)}`;
+      }
+    }
+
+    // Down payment => sync slider
     if (e.target === downPaymentInput) {
       syncDownPaymentSlider();
+    }
+
+    // property tax or rental => keep consistent
+    if (e.target === propertyTax || e.target === propertyTaxMonthly) {
+      handlePropertyTaxSync();
+    }
+    if (e.target === rentalIncomeYearly || e.target === rentalIncomeMonthly) {
+      handleRentalIncomeSync();
     }
 
     calculateMortgage();
   }
 
-  // Keep downPaymentSlider in sync if user types a new DP:
+  // Down-payment slider sync
   function syncDownPaymentSlider() {
     let dpVal = parseCurrency(downPaymentInput.value);
     let mortVal = parseCurrency(mortgageSizeInput.value);
+    if (!downPaymentSlider) return;
     if (mortVal <= 0) {
       downPaymentSlider.value = "0";
       downPaymentSliderValue.textContent = "$0";
@@ -653,16 +643,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let pct = (dpVal / mortVal) * 100;
     pct = clamp(pct, 0, 100);
     downPaymentSlider.value = pct.toFixed(0);
-
     downPaymentSliderValue.textContent = "$" + formatInt(dpVal);
     downPaymentPercentDisplay.textContent = `${pct.toFixed(0)}%`;
   }
 
-  // Interest rate input: allow decimal & partial backspaces:
+  // (B) Interest rate => partial decimal
   function handleInterestRateInput(e) {
-    let raw = e.target.value;
-    // Let them type partial decimals or clear the field
-    raw = raw.replace(/[^\d.]/g, "");
+    let raw = e.target.value.replace(/[^\d.]/g, "");
     if (raw === "") {
       interestRateSlider.value = "0";
       interestRateSliderValue.textContent = "0%";
@@ -672,23 +659,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     let val = parseFloat(raw);
     if (isNaN(val)) val = 0;
-
-    // Update slider and label, but don't force a strict format yet
     interestRateSlider.value = val.toString();
     interestRateSliderValue.textContent = val + "%";
-    // Keep the user’s typed string in the input for a better editing experience
     e.target.value = raw;
-
     calculateMortgage();
   }
 
-  // On blur, finalize the interest rate format to two decimals
+  // finalize interest => 2 decimals
   function finalizeInterestRate(e) {
     let raw = e.target.value.replace(/[^\d.]/g, "");
     if (raw === "") {
       e.target.value = "";
       interestRateSlider.value = "0";
       interestRateSliderValue.textContent = "0%";
+      calculateMortgage();
       return;
     }
     let val = parseFloat(raw) || 0;
@@ -696,18 +680,101 @@ document.addEventListener("DOMContentLoaded", () => {
     e.target.value = twoDec;
     interestRateSlider.value = twoDec;
     interestRateSliderValue.textContent = twoDec + "%";
-  }
-
-  // Interest rate slider => update the input field:
-  function handleInterestRateSlider(e) {
-    let val = parseFloat(e.target.value) || 0;
-    let val2 = val.toFixed(2);
-    interestRateInput.value = val2; // sets the final 2-decimal text
-    interestRateSliderValue.textContent = val2 + "%";
     calculateMortgage();
   }
 
-  // Attach integer auto-format to these text fields:
+  // (C) Mortgage size slider
+  function handleMortgageSizeSlider(e) {
+    let val = parseInt(e.target.value, 10) || 0;
+    // keep the input field matching the slider if within range
+    // but if user typed beyond 3,000,000, the slider is pinned but
+    // the input remains whatever user typed
+    mortgageSizeInput.value = String(val);
+    mortgageSizeSliderValue.textContent = "$" + formatInt(val);
+    calculateMortgage();
+  }
+
+  // (D) Down payment slider
+  function handleDownPaymentSlider(e) {
+    let mortVal = parseInt(mortgageSizeSlider.value, 10) || 0;
+    let sVal = parseInt(downPaymentSlider.value, 10) || 0;
+    let dp = Math.round((sVal / 100) * mortVal);
+    downPaymentInput.value = String(dp);
+    downPaymentSliderValue.textContent = "$" + formatInt(dp);
+    downPaymentPercentDisplay.textContent = sVal + "%";
+    calculateMortgage();
+  }
+
+  // (E) Sliders for condoFees, heat, otherExpenses
+  function handleCondoFeesSlider(e) {
+    let val = parseInt(e.target.value, 10) || 0;
+    condoFees.value = String(val); // raw digits
+    calculateMortgage();
+  }
+  function handleHeatSlider(e) {
+    let val = parseInt(e.target.value, 10) || 0;
+    heat.value = String(val);
+    calculateMortgage();
+  }
+  function handleOtherExpensesSlider(e) {
+    let val = parseInt(e.target.value, 10) || 0;
+    otherExpenses.value = String(val);
+    calculateMortgage();
+  }
+
+  /************************************************************
+   * 7) INIT + FIRST CALC
+   ************************************************************/
+  function initSync() {
+    // Mortgage slider
+    mortgageSizeSlider.max = "3000000";
+    mortgageSizeSlider.value = "500000";
+    mortgageSizeSliderValue.textContent = "$500,000";
+
+    // Down payment slider
+    downPaymentSlider.value = "20";
+    downPaymentSliderValue.textContent = "$100,000";
+    downPaymentPercentDisplay.textContent = "20%";
+
+    // Interest rate
+    interestRateSlider.value = "4.24";
+    interestRateInput.value = "4.24";
+    interestRateSliderValue.textContent = "4.24%";
+
+    // Home expenses
+    condoFeesSlider.value = "0";
+    heatSlider.value = "0";
+    otherExpensesSlider.value = "0";
+
+    // Faster payment
+    fasterFrequencySlider.value = "0";
+    fasterFrequencyValue.textContent = "0";
+    fasterFrequencyDropdown.value = "0";
+    oneTimePayment.value = "0";
+    oneTimePaymentSlider.value = "0";
+    annualPrepayment.value = "0";
+    annualPrepaymentSlider.value = "0";
+    mortgageTermSelect.value = "5";
+    amortizationRange.value = "25";
+    amortizationDisplay.textContent = "25";
+    includesExtraLine.style.display = "none";
+
+    // text fields
+    mortgageSizeInput.value = "500,000";
+    downPaymentInput.value = "100,000";
+    propertyTax.value = "0";
+    propertyTaxMonthly.value = "0";
+    condoFees.value = "0";
+    heat.value = "0";
+    otherExpenses.value = "0";
+    oneTimePayment.value = "0";
+    annualPrepayment.value = "0";
+  }
+
+  /************************************************************
+   * 8) ADD LISTENERS
+   ************************************************************/
+  // All integer fields => partial on input, finalize on blur
   [
     mortgageSizeInput,
     downPaymentInput,
@@ -722,85 +789,60 @@ document.addEventListener("DOMContentLoaded", () => {
     rentalIncomeMonthly
   ].forEach((el) => {
     if (!el) return;
-    el.addEventListener("input", handleInputWithCommas);
+    el.addEventListener("input", handleIntegerInput);
+    el.addEventListener("blur", finalizeIntegerInput);
   });
 
-  // Attach interest rate listeners:
-  interestRateInput?.addEventListener("input", handleInterestRateInput);
-  interestRateInput?.addEventListener("blur", finalizeInterestRate);
-  interestRateSlider?.addEventListener("input", handleInterestRateSlider);
-
-  // Mortgage sliders
-  mortgageSizeSlider?.addEventListener("input", () => {
-    let val = parseInt(mortgageSizeSlider.value, 10) || 0;
-    mortgageSizeInput.value = formatInt(val);
-    mortgageSizeSliderValue.textContent = "$" + formatInt(val);
-    calculateMortgage();
-  });
-
-  downPaymentSlider?.addEventListener("input", () => {
-    let mortVal = parseInt(mortgageSizeSlider.value, 10) || 0;
-    let sVal = parseInt(downPaymentSlider.value, 10) || 0;
-    let dp = Math.round((sVal / 100) * mortVal);
-    downPaymentInput.value = formatInt(dp);
-    if (downPaymentSliderValue) downPaymentSliderValue.textContent = "$" + formatInt(dp);
-    if (downPaymentPercentDisplay) downPaymentPercentDisplay.textContent = sVal + "%";
+  // Interest rate
+  interestRateInput.addEventListener("input", handleInterestRateInput);
+  interestRateInput.addEventListener("blur", finalizeInterestRate);
+  interestRateSlider.addEventListener("input", () => {
+    // user moved the slider => update the input + label
+    let val = parseFloat(interestRateSlider.value) || 0;
+    let valStr = val.toFixed(2);
+    interestRateInput.value = valStr;
+    interestRateSliderValue.textContent = valStr + "%";
     calculateMortgage();
   });
 
-  // Home expenses sliders
-  condoFeesSlider?.addEventListener("input", (e) => {
-    if (condoFees) {
-      condoFees.value = formatInt(parseFloat(e.target.value) || 0);
-    }
-    calculateMortgage();
-  });
-  heatSlider?.addEventListener("input", (e) => {
-    if (heat) {
-      heat.value = formatInt(parseFloat(e.target.value) || 0);
-    }
-    calculateMortgage();
-  });
-  otherExpensesSlider?.addEventListener("input", (e) => {
-    if (otherExpenses) {
-      otherExpenses.value = formatInt(parseFloat(e.target.value) || 0);
-    }
-    calculateMortgage();
-  });
+  // Mortgage & Down Payment sliders
+  mortgageSizeSlider.addEventListener("input", handleMortgageSizeSlider);
+  downPaymentSlider.addEventListener("input", handleDownPaymentSlider);
 
-  // Faster Payment sliders
-  fasterFrequencySlider?.addEventListener("input", (e) => {
-    if (fasterFrequencyValue) fasterFrequencyValue.textContent = e.target.value;
-    calculateMortgage();
-  });
-  fasterFrequencyDropdown?.addEventListener("change", calculateMortgage);
+  // Condo Fees, Heat, Other Expenses sliders
+  condoFeesSlider.addEventListener("input", handleCondoFeesSlider);
+  heatSlider.addEventListener("input", handleHeatSlider);
+  otherExpensesSlider.addEventListener("input", handleOtherExpensesSlider);
 
-  oneTimePaymentSlider?.addEventListener("input", (e) => {
-    if (oneTimePayment) {
-      oneTimePayment.value = formatInt(parseFloat(e.target.value) || 0);
-    }
-    calculateMortgage();
-  });
-  annualPrepaymentSlider?.addEventListener("input", (e) => {
-    if (annualPrepayment) {
-      annualPrepayment.value = formatInt(parseFloat(e.target.value) || 0);
-    }
-    calculateMortgage();
-  });
-
-  // Dropdowns & Toggles
-  paymentFrequencySelect?.addEventListener("change", calculateMortgage);
-  fixedRateBtn?.addEventListener("change", calculateMortgage);
-  variableRateBtn?.addEventListener("change", calculateMortgage);
-  mortgageTermSelect?.addEventListener("change", calculateMortgage);
-  amortizationRange?.addEventListener("input", (e) => {
+  // Payment Frequency & Others
+  paymentFrequencySelect.addEventListener("change", calculateMortgage);
+  fixedRateBtn.addEventListener("change", calculateMortgage);
+  variableRateBtn.addEventListener("change", calculateMortgage);
+  mortgageTermSelect.addEventListener("change", calculateMortgage);
+  amortizationRange.addEventListener("input", (e) => {
     amortizationDisplay.textContent = e.target.value;
     calculateMortgage();
   });
-  loanType?.addEventListener("change", calculateMortgage);
-  compoundingFrequency?.addEventListener("change", calculateMortgage);
+  loanType.addEventListener("change", calculateMortgage);
+  compoundingFrequency.addEventListener("change", calculateMortgage);
 
-  rentalIncomeToggle?.addEventListener("change", (e) => {
+  // Faster Payment
+  fasterFrequencySlider.addEventListener("input", (e) => {
+    fasterFrequencyValue.textContent = e.target.value;
+    calculateMortgage();
+  });
+  fasterFrequencyDropdown.addEventListener("change", calculateMortgage);
+  oneTimePaymentSlider.addEventListener("input", (e) => {
+    oneTimePayment.value = String(parseInt(e.target.value, 10) || 0);
+    calculateMortgage();
+  });
+  annualPrepaymentSlider.addEventListener("input", (e) => {
+    annualPrepayment.value = String(parseInt(e.target.value, 10) || 0);
+    calculateMortgage();
+  });
+
+  // Rental Income Toggle
+  rentalIncomeToggle.addEventListener("change", (e) => {
     if (e.target.checked) {
       rentalIncomeSection.classList.remove("d-none");
     } else {
@@ -812,11 +854,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Scenario B
-  calculateScenarioBButton?.addEventListener("click", calculateScenarioB);
+  calculateScenarioBButton.addEventListener("click", calculateScenarioB);
 
   // Download CSV
-  downloadReportButton?.addEventListener("click", () => {
-    // 1) Generate CSV data
+  downloadReportButton.addEventListener("click", () => {
     const csvRows = [];
     csvRows.push("Mortgage Size,Down Payment,Payment Frequency,Rate");
     csvRows.push(
@@ -831,8 +872,6 @@ document.addEventListener("DOMContentLoaded", () => {
     csvRows.push("Monthly Payment," + totalMonthlyCost.textContent);
 
     const csvData = csvRows.join("\n");
-
-    // 2) Create a download link
     const blob = new Blob([csvData], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -843,59 +882,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Apply Now
-  applyNowBtn?.addEventListener("click", () => {
-    // Navigate to https://thegenesisgroup.ca/apply-now/
+  applyNowBtn.addEventListener("click", () => {
     window.location.href = "https://thegenesisgroup.ca/apply-now/";
   });
 
-  /************************************************************
-   * 7) INIT + FIRST CALC
-   ************************************************************/
-  function initSync() {
-    // default slider values
-    mortgageSizeSlider.value = "500000";
-    downPaymentSlider.value = "20";
-    interestRateSlider.value = "4.24";
-    interestRateInput.value = "4.24";
-    interestRateSliderValue.textContent = "4.24%";
-
-    fasterFrequencySlider.value = "0";
-    fasterFrequencyValue.textContent = "0";
-    fasterFrequencyDropdown.value = "0";
-    oneTimePayment.value = "0";
-    oneTimePaymentSlider.value = "0";
-    annualPrepayment.value = "0";
-    annualPrepaymentSlider.value = "0";
-    mortgageTermSelect.value = "5";
-    amortizationRange.value = "25";
-    amortizationDisplay.textContent = "25";
-    includesExtraLine.style.display = "none";
-
-    // default text fields
-    mortgageSizeInput.value = "500,000";
-    downPaymentInput.value = "100,000";
-    propertyTax.value = "0";
-    propertyTaxMonthly.value = "0";
-    condoFees.value = "0";
-    heat.value = "0";
-    otherExpenses.value = "0";
-    oneTimePayment.value = "0";
-    annualPrepayment.value = "0";
-  }
-
+  // Init + First Calc
   initSync();
   calculateMortgage();
 
   /************************************************************
-   * 8) BOOTSTRAP POPOVERS (auto-close after 3s)
+   * 9) BOOTSTRAP POPOVERS
    ************************************************************/
   const popoverTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="popover"]')
   );
   popoverTriggerList.forEach((el) => {
-    const pop = new bootstrap.Popover(el, {
-      trigger: "manual"
-    });
+    const pop = new bootstrap.Popover(el, { trigger: "manual" });
     el.addEventListener("click", () => {
       pop.toggle();
       setTimeout(() => {
