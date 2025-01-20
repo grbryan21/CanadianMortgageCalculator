@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Genesis Mortgage Calculator</title>
+  <meta name="description" content="Calculate your Canadian mortgage payments instantly with our free tool. Get pre-approved in just 5 minutes and compare options easily." />
+
+  <title>Canadian Mortgage Payment Calculator | Get Pre-Approved in 5 Minutes</title>
+
+  <!-- Favicon for all browsers -->
+<link rel="icon" type="image/png" sizes="32x32" href="images/genesis-logo-32x32.png">
+<link rel="icon" type="image/x-icon" href="images/genesis-logo.ico">
+<link rel="shortcut icon" href="images/genesis-logo.ico" type="image/x-icon">
 
   <!-- Bootstrap CSS -->
   <link
@@ -25,8 +32,48 @@
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialProduct",
+      "name": "Canadian Mortgage Payment Calculator",
+      "description": "Easily calculate your Canadian mortgage payments and get pre-approved in just 5 minutes.",
+      "url": "https://calculator.thegenesisgroup.ca",
+      "provider": {
+        "@type": "Organization",
+        "name": "Genesis Group",
+        "url": "https://thegenesisgroup.ca"
+      }
+    }
+    </script>
+    
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V5Q5GY3XVH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-V5Q5GY3XVH');
+</script>
+    
 </head>
 <body>
+  <header class="container-fluid bg-light py-4">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold text-primary" style="color: #2d423f!important;">Canadian Mortgage Payment Calculator</h1>
+        <h2 class="fs-4 text-secondary mt-3">Estimate Your Monthly Mortgage Payments Instantly</h2>
+        <h2 class="fs-5 text-muted">Get Pre-Approved in Just 5 Minutes</h2>
+        
+        <p class="lead text-dark mt-4">
+            Our free <strong>Canadian mortgage calculator</strong> helps you easily estimate monthly payments, down payment options, and interest costs. 
+            Whether you're a first-time homebuyer or refinancing, get a clear picture of your mortgage and <strong><span style="color: #0f7570!important;">Try Our Canadian Mortgage Payment Calculator Today.</span></strong>
+        </p>
+    </div>
+</header>
+
+    <!-- Mortgage Calculator Section -->
   <div class="container-fluid">
     <div class="row">
       <!-- LEFT COLUMN: INPUTS -->
@@ -667,7 +714,7 @@
             </button>
             <!-- APPLY NOW BUTTON (ensuring it's visible) -->
             <button id="applyNowBtn" class="btn btn-success w-100" style="font-size:0.9rem;">
-              Apply Now
+              Calculate My Mortgage Payment Now
             </button>
             <!-- Copyright -->
             <p id="copyrightGenesis"><strong>Powered by <a href="https://thegenesisgroup.ca/">the Genesis Group</a></strong></p>
@@ -799,7 +846,7 @@
       <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
         <div class="col-md-4 d-flex align-items-center">
           <a href="https://thegenesisgroup.ca/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
-            <img src="Genesis-Logo-cropped.svg" alt="Genesis Logo" width="30" height="24">
+            <img src="images/Genesis-Logo-cropped.svg" alt="Genesis Logo" width="30" height="24">
           </a>
           <span class="mb-3 mb-md-0 text-body-secondary">© 2024 the Genesis Group</span>
         </div>
