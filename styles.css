@@ -36,7 +36,6 @@ h1, h2, h3, h4, h5, h6 {
   position: sticky;
   top: 0;
   height: 100vh;
-  /* overflow: hidden;  */
   background-color: #f9f9f9;
 } 
 
@@ -111,9 +110,9 @@ h1, h2, h3, h4, h5, h6 {
   height: 100%;
 }
 
-/* Hide the gear icon config by default */
+/* Hide gear icon config by default */
 .config-icon {
-  display: none; /* or comment out if you prefer */
+  display: none;
 }
 
 .bullet {
@@ -193,6 +192,15 @@ h1, h2, h3, h4, h5, h6 {
   align-self: center;
   font-size: small;
 }
+
+#chartsContainer {
+  max-height: 100vh;    /* Limit the maximum height */
+  overflow-y: auto;     /* Scroll if content overflows */
+  width: 100%;          /* Full width */
+  padding: 20px;        /* Optional: add padding */
+  box-sizing: border-box;
+}
+
 
 
 /* RESPONSIVE */
