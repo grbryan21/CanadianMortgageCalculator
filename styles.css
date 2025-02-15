@@ -12,7 +12,8 @@ body {
   color: #2d423f !important; /* Headings color */
 }
 .results-color {
-  color: #2d232e !important; /* Large font results color */
+  color: #0f7570 !important; /* Large font results color */
+  font-weight: 800 !important;
 }
 
 .container-fluid {
