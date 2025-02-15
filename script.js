@@ -426,10 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Accelerated % from dropdown
     const xPct = parseInt(fasterFrequencyDropdown.value || "0", 10);
     if (xPct > 0) {
-      includesExtraLine.style.display = "block";
+      includesExtraLine.classList.remove("d-none");
       extraPaymentPercent.textContent = xPct + "%";
     } else {
-      includesExtraLine.style.display = "none";
+      includesExtraLine.classList.add("d-none");
       extraPaymentPercent.textContent = "0%";
     }
 
