@@ -1,5 +1,5 @@
 /* 1. FONTS & BASE */
-body {
+main {
   font-family: 'Lora', serif;
   font-size: 16px;
   background-color: #f7f7ff;
@@ -13,7 +13,6 @@ body {
 }
 .results-color {
   color: #0f7570 !important; /* Large font results color */
-  font-weight: 800 !important;
 }
 
 .container-fluid {
